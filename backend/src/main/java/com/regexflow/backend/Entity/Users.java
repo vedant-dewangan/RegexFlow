@@ -1,6 +1,6 @@
-package Entity;
+package com.regexflow.backend.Entity;
 
-import Enums.UserRole;
+import com.regexflow.backend.Enums.UserRole;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,25 +15,25 @@ public class Users {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
-    private Long UId;
+    private Long uId;
 
     @Column(nullable = false)
-    private String Name;
+    private String name;
 
     @Column(unique = true,nullable = false)
-    private String Email;
+    private String email;
 
     @Column(nullable = false,name = "password_hash")
-    private String PasswordHash;
+    private String passwordHash;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private UserRole Role;
+    private UserRole role;
 
-    @OneToMany(mappedBy = "VerifiedBy")
-    private List<AuditLog> AuditLogs;
+    @OneToMany(mappedBy = "verifiedBy")
+    private List<AuditLog> auditLogs;
 
-    @OneToMany(mappedBy = "CreatedBy")
-    private List<RegexTemplate> RegexTemplates;
+    @OneToMany(mappedBy = "createdBy")
+    private List<RegexTemplate> regexTemplates;
 
 }

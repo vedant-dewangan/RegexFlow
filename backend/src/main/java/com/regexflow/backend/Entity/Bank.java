@@ -1,4 +1,4 @@
-package Entity;
+package com.regexflow.backend.Entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -13,15 +13,15 @@ import java.util.List;
 public class Bank {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long BId;
+    private Long bId;
 
     @Column(unique = true, nullable = false)
-    private String Name;
+    private String name;
 
     @Column(unique = true, nullable = false)
-    private String Address;
+    private String address;
 
-    @OneToMany(mappedBy = "Bank")
-    private List<RegexTemplate>  RegexTemplates;
+    @OneToMany(mappedBy = "bank")
+    private List<RegexTemplate> regexTemplates;
 
 }

@@ -1,4 +1,4 @@
-package Entity;
+package com.regexflow.backend.Entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -7,42 +7,39 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+import com.regexflow.backend.Enums.AuditStatus;
+
 @Entity
 @Table(name="audit_logs")
+@Getter
+@Setter
 public class AuditLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter
-    @Setter
     @Column(name="audit_id")
-    private Long AuditId;
+    private Long auditId;
 
-    @Getter
-    @Setter
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String Status;
+    private AuditStatus status;
 
-    @Getter
-    @Setter
+   
     @ManyToOne(optional = false)
     @JoinColumn(name = "verified_by")
-    private Users VerifiedBy;
+    private Users verifiedBy;
 
-    @Getter
-    @Setter
+
     @Column(nullable = false,name="verified_at")
-    private LocalDateTime VerifiedAt;
+    private LocalDateTime verifiedAt;
 
     @PrePersist
     public void prePersist(){
-        this.VerifiedAt = LocalDateTime.now();
+        this.verifiedAt = LocalDateTime.now();
     }
 
 
-    @Getter
-    @Setter
     @OneToOne(optional = false)
-    @JoinColumn(name = "Template_id",unique = true)
-    private RegexTemplate Template;
+    @JoinColumn(name = "template_id",unique = true)
+    private RegexTemplate template;
 
 }

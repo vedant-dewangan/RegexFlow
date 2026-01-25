@@ -1,6 +1,6 @@
-package Entity;
+package com.regexflow.backend.Entity;
 
-import Enums.RegexTemplateStatus;
+import com.regexflow.backend.Enums.RegexTemplateStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,42 +15,42 @@ public class RegexTemplate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "template_id",nullable = false)
-    private Long TemplateId;
+    private Long templateId;
 
     @Column(name="sender_header",nullable=false)
-    private String SenderHeader;
+    private String senderHeader;
 
     @Lob
     @Column(nullable=false)
-    private String Pattern;
+    private String pattern;
 
     @Column(name = "sms_type",nullable=false)
-    private String SmsType;
+    private String smsType;
 
 
     // Current lifecycle state: DRAFT, PENDING, VERIFIED, DEPRECATED
     @Column(nullable=false)
     @Enumerated(EnumType.STRING)
-    private RegexTemplateStatus Status;
+    private RegexTemplateStatus status;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "created_by")
-    private Users CreatedBy;
+    private Users createdBy;
 
     @Column(name = "created_at")
-    private LocalDateTime CreatedAt;
+    private LocalDateTime createdAt;
 
     @PrePersist
     public void prePersist(){
-        this.CreatedAt = LocalDateTime.now();
-        this.Status = RegexTemplateStatus.DRAFT;
+        if (this.createdAt == null) this.createdAt = LocalDateTime.now();
+        if (this.status == null) this.status = RegexTemplateStatus.DRAFT;
     }
 
     @ManyToOne(optional = false)
     @JoinColumn(name="bank_id")
-    private Bank Bank;
+    private Bank bank;
 
-    @OneToOne(mappedBy = "Template")
-    private AuditLog AuditLog;
+    @OneToOne(mappedBy = "template")
+    private AuditLog auditLog;
 
 }

@@ -1,6 +1,6 @@
-package Repository;
+package com.regexflow.backend.Repository;
 
-import Entity.AuditLog;
+import com.regexflow.backend.Entity.AuditLog;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AuditLogRepository extends JpaRepository<AuditLog,Long> {

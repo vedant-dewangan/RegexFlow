@@ -1,4 +1,4 @@
-package Enums;
+package com.regexflow.backend.Enums;
 
 public enum UserRole {
     MAKER,
