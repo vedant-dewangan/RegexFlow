@@ -19,7 +19,7 @@ public class RegexTemplateMapper {
         dto.setPattern(template.getPattern());
         dto.setSmsType(template.getSmsType());
         dto.setStatus(template.getStatus());
-        dto.setCreatedAt(template.getCreatedAt());
+        dto.setPaymentType(template.getPaymentType());
 
         if (template.getCreatedBy() != null) {
             dto.setCreatedById(template.getCreatedBy().getUId());
@@ -50,6 +50,7 @@ public class RegexTemplateMapper {
         template.setSmsType(dto.getSmsType());
         template.setStatus(dto.getStatus());
         template.setCreatedAt(dto.getCreatedAt());
+        template.setPaymentType(dto.getPaymentType());
 
         if (dto.getCreatedById() != null) {
             Users user = new Users();

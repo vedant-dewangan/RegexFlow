@@ -10,12 +10,9 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UsersDto {
-    private Long uId;
+public class UserRequestDto {
     private String name;
     private String email;
-    private String passwordHash;
+    private String password;
     private UserRole role;
-    private List<Long> auditLogIds;
-    private List<Long> regexTemplateIds;
 }

@@ -1,6 +1,8 @@
 package com.regexflow.backend.Dto;
 
+import com.regexflow.backend.Enums.PaymentType;
 import com.regexflow.backend.Enums.RegexTemplateStatus;
+import com.regexflow.backend.Enums.SmsType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,7 +16,7 @@ public class RegexTemplateDto {
     private Long templateId;
     private String senderHeader;
     private String pattern;
-    private String smsType;
+    private SmsType smsType;
     private RegexTemplateStatus status;
     private Long createdById;
     private String createdByName;
@@ -22,4 +24,5 @@ public class RegexTemplateDto {
     private Long bankId;
     private String bankName;
     private Long auditLogId;
+    private PaymentType paymentType;
 }

@@ -15,8 +15,6 @@ public class AuditLogMapper {
         AuditLogDto dto = new AuditLogDto();
         dto.setAuditId(auditLog.getAuditId());
         dto.setStatus(auditLog.getStatus());
-        dto.setVerifiedAt(auditLog.getVerifiedAt());
-
         if (auditLog.getVerifiedBy() != null) {
             dto.setVerifiedById(auditLog.getVerifiedBy().getUId());
             dto.setVerifiedByName(auditLog.getVerifiedBy().getName());
