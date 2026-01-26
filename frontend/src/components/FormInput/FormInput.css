@@ -1,0 +1,92 @@
+.form-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.form-input-label {
+  color: #2d3748;
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.01em;
+}
+
+.required-asterisk {
+  color: #e53e3e;
+  margin-left: 0.25rem;
+}
+
+.form-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: #ffffff;
+  color: #1a202c;
+  font-family: inherit;
+}
+
+.form-input::placeholder {
+  color: #a0aec0;
+}
+
+.form-input:hover {
+  border-color: #cbd5e0;
+}
+
+.form-input:focus,
+.form-input.focused {
+  outline: none;
+  border-color: #154835;
+  box-shadow: 0 0 0 3px rgba(21, 72, 53, 0.1);
+}
+
+.form-input:disabled {
+  background-color: #f7fafc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  color: #718096;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+  border-radius: 6px;
+}
+
+.password-toggle-btn:hover {
+  color: #154835;
+  background-color: #f7fafc;
+}
+
+.password-toggle-btn:focus {
+  outline: 2px solid #154835;
+  outline-offset: 2px;
+}
+
+.password-toggle-btn svg {
+  font-size: 1.1rem;
+}
+
+/* Adjust input padding when password toggle is present */
+.form-input.has-toggle {
+  padding-right: 3rem;
+}

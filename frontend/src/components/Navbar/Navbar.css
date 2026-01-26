@@ -1,0 +1,144 @@
+/* Navbar Styles */
+.navbar {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  width: 100vw;
+}
+
+.navbar-container {
+  margin: 0 auto;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.navbar-logo-link {
+  display: flex;
+  align-items: center;
+  transition: opacity 0.3s ease;
+}
+
+.navbar-logo-link:hover {
+  opacity: 0.8;
+}
+
+.navbar-logo {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
+.navbar-divider {
+  width: 1px;
+  height: 30px;
+  background-color: #e5e7eb;
+  margin: 0 0.5rem;
+}
+
+.navbar-brand {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #154835;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.navbar-brand:hover {
+  color: #1c4033;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-btn {
+  padding: 0.625rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  display: inline-block;
+  font-family: inherit;
+}
+
+.navbar-btn-login {
+  background-color: #154835;
+  color: white;
+}
+
+.navbar-btn-login:hover {
+  background-color: #1c4033;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(21, 72, 53, 0.2);
+}
+
+.navbar-btn-logout {
+  background-color: transparent;
+  color: #154835;
+  border: 2px solid #154835;
+}
+
+.navbar-btn-logout:hover {
+  background-color: #154835;
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .navbar-container {
+    padding: 1rem;
+  }
+
+  .navbar-left {
+    gap: 1rem;
+  }
+
+  .navbar-logo {
+    height: 32px;
+  }
+
+  .navbar-brand {
+    font-size: 1.25rem;
+  }
+
+  .navbar-divider {
+    height: 24px;
+    margin: 0 0.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-left {
+    gap: 0.75rem;
+  }
+
+  .navbar-brand {
+    font-size: 1.125rem;
+  }
+
+  .navbar-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .navbar-divider {
+    height: 20px;
+  }
+}
