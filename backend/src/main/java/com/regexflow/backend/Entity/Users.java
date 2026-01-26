@@ -2,6 +2,7 @@ package com.regexflow.backend.Entity;
 
 import com.regexflow.backend.Enums.UserRole;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,6 +12,7 @@ import java.util.List;
 @Table(name = "users")
 @Getter
 @Setter
+
 public class Users {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,5 +37,7 @@ public class Users {
 
     @OneToMany(mappedBy = "createdBy")
     private List<RegexTemplate> regexTemplates;
+
+
 
 }

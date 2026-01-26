@@ -1,6 +1,8 @@
 package com.regexflow.backend.Entity;
 
+import com.regexflow.backend.Enums.PaymentType;
 import com.regexflow.backend.Enums.RegexTemplateStatus;
+import com.regexflow.backend.Enums.SmsType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,9 +26,9 @@ public class RegexTemplate {
     @Column(nullable=false)
     private String pattern;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "sms_type",nullable=false)
-    private String smsType;
-
+    private SmsType smsType;
 
     // Current lifecycle state: DRAFT, PENDING, VERIFIED, DEPRECATED
     @Column(nullable=false)
@@ -52,5 +54,9 @@ public class RegexTemplate {
 
     @OneToOne(mappedBy = "template")
     private AuditLog auditLog;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentType paymentType;
 
 }
