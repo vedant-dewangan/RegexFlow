@@ -13,3 +13,9 @@ target/
 # IDEs
 .idea/
 .vscode/
+
+# SSH Keys (should never be committed!)
+regex
+regex.pub
+*.pem
+*.key
