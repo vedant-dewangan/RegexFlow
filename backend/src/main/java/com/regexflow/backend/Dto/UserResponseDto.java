@@ -13,6 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserResponseDto {
+    private Long userId;  // Added so you can see the ID in responses
     private String name;
     private String email;
     private UserRole role;

@@ -12,6 +12,7 @@ public class UsersMapper {
             return null;
         }
         UserResponseDto dto = new UserResponseDto();
+        dto.setUserId(user.getUId());  // Added userId so you can see it in responses
         dto.setName(user.getName());
         dto.setEmail(user.getEmail());
         dto.setRole(user.getRole());
