@@ -4,6 +4,7 @@ import com.regexflow.backend.Dto.BankDto;
 import com.regexflow.backend.Enums.UserRole;
 import com.regexflow.backend.Service.BankService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,12 +25,16 @@ public class BankController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<BankDto> createBank(@RequestBody BankDto bankDto, HttpSession session) {
+    public ResponseEntity<?> createBank(@RequestBody BankDto bankDto, HttpSession session) {
         if (!isAdmin(session)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        BankDto createdBank = bankService.createBank(bankDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdBank);
+        try{
+            BankDto createdBank = bankService.createBank(bankDto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdBank);
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+        }
     }
 
     @GetMapping

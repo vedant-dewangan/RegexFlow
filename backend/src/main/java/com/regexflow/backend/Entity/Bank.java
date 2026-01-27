@@ -15,10 +15,10 @@ public class Bank {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long bId;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String name;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String address;
 
     @OneToMany(mappedBy = "bank")

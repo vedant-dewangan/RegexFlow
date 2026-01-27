@@ -6,6 +6,7 @@ import com.regexflow.backend.Mapper.BankMapper;
 import com.regexflow.backend.Repository.BankRepository;
 import org.springframework.stereotype.Service;
 
+
 import java.util.List;
 
 @Service
@@ -17,6 +18,9 @@ public class BankService {
     }
 
     public BankDto createBank(BankDto bankDto) {
+        if(bankRepository.existsByAddress(bankDto.getAddress()) && bankRepository.existsByName(bankDto.getName())){
+            throw new RuntimeException("Bank already exists");
+        }
         Bank bank = BankMapper.toEntity(bankDto);
         bank.setBId(null);
         Bank savedBank = bankRepository.save(bank);
