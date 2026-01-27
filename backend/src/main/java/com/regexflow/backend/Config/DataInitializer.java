@@ -4,6 +4,7 @@ import com.regexflow.backend.Entity.Users;
 import com.regexflow.backend.Enums.UserRole;
 import com.regexflow.backend.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -22,6 +23,16 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
+    // Default admin configuration from application.properties
+    @Value("${admin.default.name:System Admin}")
+    private String defaultAdminName;
+
+    @Value("${admin.default.email:admin@regexflow.com}")
+    private String defaultAdminEmail;
+
+    @Value("${admin.default.password:admin123}")
+    private String defaultAdminPassword;
+
     @Override
     public void run(String... args) throws Exception {
         // Check if any admin exists
@@ -31,16 +42,17 @@ public class DataInitializer implements CommandLineRunner {
         // If no admin exists, create a default one
         if (!adminExists) {
             Users defaultAdmin = new Users();
-            defaultAdmin.setName("System Admin");
-            defaultAdmin.setEmail("admin@regexflow.com");
-            defaultAdmin.setPasswordHash(passwordEncoder.encode("admin123")); // Default password
+            defaultAdmin.setName(defaultAdminName);
+            defaultAdmin.setEmail(defaultAdminEmail);
+            defaultAdmin.setPasswordHash(passwordEncoder.encode(defaultAdminPassword));
             defaultAdmin.setRole(UserRole.ADMIN);
 
             userRepository.save(defaultAdmin);
             System.out.println("==========================================");
             System.out.println("Default ADMIN user created!");
-            System.out.println("Email: admin@regexflow.com");
-            System.out.println("Password: admin123");
+            System.out.println("Name: " + defaultAdminName);
+            System.out.println("Email: " + defaultAdminEmail);
+            System.out.println("Password: " + defaultAdminPassword);
             System.out.println("Please change this password after first login!");
             System.out.println("==========================================");
         }
