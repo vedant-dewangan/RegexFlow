@@ -1,206 +1,252 @@
 package com.regexflow.backend.Service;
 
+import com.regexflow.backend.Dto.FieldResult;
 import com.regexflow.backend.Dto.RegexProcessRequest;
 import com.regexflow.backend.Dto.RegexProcessResponse;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 @Service
 public class RegexProcessService {
 
     public RegexProcessResponse processRegex(RegexProcessRequest request) {
+
         RegexProcessResponse response = new RegexProcessResponse();
-        
-        // Initialize all fields with "-1" as default (matching the image)
-        initializeDefaultValues(response);
-        
+
         try {
-            // Compile the regex pattern
-            Pattern pattern = Pattern.compile(request.getRegexPattern());
+            Pattern pattern = Pattern.compile(request.getRegexPattern(), Pattern.CASE_INSENSITIVE);
             Matcher matcher = pattern.matcher(request.getRawMsg());
-            
-            if (matcher.find()) {
-                // Extract fields based on named groups or positional groups
-                extractFields(matcher, response, request);
-            } else {
-                // If pattern doesn't match, return default values
-                return response;
+
+            if (!matcher.find()) {
+                return response; // all fields will have index -1 and value null
             }
-        } catch (PatternSyntaxException e) {
-            // Invalid regex pattern - return default values
+
+            // Map to store group number for each named group
+            Map<String, Integer> groupNumberMap = findGroupNumbers(request.getRegexPattern());
+            
+            // Extract all named groups from the matcher
+            Map<String, FieldResult> extractedFields = new HashMap<>();
+            
+            // All possible field names to extract
+            String[] fieldNames = {
+                // Basic Transaction Fields
+                "bankAcId", "amount", "amountNegative", "date", "merchant", "txnNote", "balance", "balanceNegative",
+                // Sender/Receiver Details
+                "senderName", "sBank", "sAcType", "sAcId", "receiverName", "rBank",
+                // General Information
+                "availLimit", "creditLimit", "paymentType", "city",
+                // Biller Details
+                "billerAcId", "billId", "billDate", "billPeriod", "dueDate", "minAmtDue", "totAmtDue",
+                // FD Details
+                "principalAmount", "frequency", "maturityDate", "maturityAmount", "rateOfInterest",
+                // MF Details
+                "mfNav", "mfUnits", "mfArn", "mfBalUnits", "mfSchemeBal",
+                // Order Details
+                "amountPaid", "offerAmount", "minPurchaseAmt"
+            };
+            
+            for (String fieldName : fieldNames) {
+                try {
+                    String groupValue = matcher.group(fieldName);
+                    if (groupValue != null) {
+                        // Get the group number (1-based index) from the pattern
+                        int groupIndex = groupNumberMap.getOrDefault(fieldName, -1);
+                        extractedFields.put(fieldName, new FieldResult(groupValue, groupIndex));
+                    }
+                } catch (IllegalArgumentException e) {
+                    // Group name doesn't exist in pattern, skip it
+                }
+            }
+
+            // Map extracted fields to response
+            // Basic Transaction Fields
+            if (extractedFields.containsKey("bankAcId")) {
+                response.setBankAcId(extractedFields.get("bankAcId"));
+            }
+            if (extractedFields.containsKey("amount")) {
+                response.setAmount(extractedFields.get("amount"));
+            }
+            if (extractedFields.containsKey("amountNegative")) {
+                response.setAmountNegative(extractedFields.get("amountNegative"));
+            }
+            if (extractedFields.containsKey("date")) {
+                response.setDate(extractedFields.get("date"));
+            }
+            if (extractedFields.containsKey("merchant")) {
+                response.setMerchant(extractedFields.get("merchant"));
+            }
+            if (extractedFields.containsKey("txnNote")) {
+                response.setTxnNote(extractedFields.get("txnNote"));
+            }
+            if (extractedFields.containsKey("balance")) {
+                response.setBalance(extractedFields.get("balance"));
+            }
+            if (extractedFields.containsKey("balanceNegative")) {
+                response.setBalanceNegative(extractedFields.get("balanceNegative"));
+            }
+
+            // Sender/Receiver Details
+            if (extractedFields.containsKey("senderName")) {
+                response.setSenderName(extractedFields.get("senderName"));
+            }
+            if (extractedFields.containsKey("sBank")) {
+                response.setSBank(extractedFields.get("sBank"));
+            }
+            if (extractedFields.containsKey("sAcType")) {
+                response.setSAcType(extractedFields.get("sAcType"));
+            }
+            if (extractedFields.containsKey("sAcId")) {
+                response.setSAcId(extractedFields.get("sAcId"));
+            }
+            if (extractedFields.containsKey("receiverName")) {
+                response.setReceiverName(extractedFields.get("receiverName"));
+            }
+            if (extractedFields.containsKey("rBank")) {
+                response.setRBank(extractedFields.get("rBank"));
+            }
+
+            // General Information
+            if (extractedFields.containsKey("availLimit")) {
+                response.setAvailLimit(extractedFields.get("availLimit"));
+            }
+            if (extractedFields.containsKey("creditLimit")) {
+                response.setCreditLimit(extractedFields.get("creditLimit"));
+            }
+            if (extractedFields.containsKey("paymentType")) {
+                response.setPaymentType(extractedFields.get("paymentType"));
+            }
+            if (extractedFields.containsKey("city")) {
+                response.setCity(extractedFields.get("city"));
+            }
+
+            // Biller Details
+            if (extractedFields.containsKey("billerAcId")) {
+                response.setBillerAcId(extractedFields.get("billerAcId"));
+            }
+            if (extractedFields.containsKey("billId")) {
+                response.setBillId(extractedFields.get("billId"));
+            }
+            if (extractedFields.containsKey("billDate")) {
+                response.setBillDate(extractedFields.get("billDate"));
+            }
+            if (extractedFields.containsKey("billPeriod")) {
+                response.setBillPeriod(extractedFields.get("billPeriod"));
+            }
+            if (extractedFields.containsKey("dueDate")) {
+                response.setDueDate(extractedFields.get("dueDate"));
+            }
+            if (extractedFields.containsKey("minAmtDue")) {
+                response.setMinAmtDue(extractedFields.get("minAmtDue"));
+            }
+            if (extractedFields.containsKey("totAmtDue")) {
+                response.setTotAmtDue(extractedFields.get("totAmtDue"));
+            }
+
+            // FD Details
+            if (extractedFields.containsKey("principalAmount")) {
+                response.setPrincipalAmount(extractedFields.get("principalAmount"));
+            }
+            if (extractedFields.containsKey("frequency")) {
+                response.setFrequency(extractedFields.get("frequency"));
+            }
+            if (extractedFields.containsKey("maturityDate")) {
+                response.setMaturityDate(extractedFields.get("maturityDate"));
+            }
+            if (extractedFields.containsKey("maturityAmount")) {
+                response.setMaturityAmount(extractedFields.get("maturityAmount"));
+            }
+            if (extractedFields.containsKey("rateOfInterest")) {
+                response.setRateOfInterest(extractedFields.get("rateOfInterest"));
+            }
+
+            // MF Details
+            if (extractedFields.containsKey("mfNav")) {
+                response.setMfNav(extractedFields.get("mfNav"));
+            }
+            if (extractedFields.containsKey("mfUnits")) {
+                response.setMfUnits(extractedFields.get("mfUnits"));
+            }
+            if (extractedFields.containsKey("mfArn")) {
+                response.setMfArn(extractedFields.get("mfArn"));
+            }
+            if (extractedFields.containsKey("mfBalUnits")) {
+                response.setMfBalUnits(extractedFields.get("mfBalUnits"));
+            }
+            if (extractedFields.containsKey("mfSchemeBal")) {
+                response.setMfSchemeBal(extractedFields.get("mfSchemeBal"));
+            }
+
+            // Order Details
+            if (extractedFields.containsKey("amountPaid")) {
+                response.setAmountPaid(extractedFields.get("amountPaid"));
+            }
+            if (extractedFields.containsKey("offerAmount")) {
+                response.setOfferAmount(extractedFields.get("offerAmount"));
+            }
+            if (extractedFields.containsKey("minPurchaseAmt")) {
+                response.setMinPurchaseAmt(extractedFields.get("minPurchaseAmt"));
+            }
+
+        } catch (Exception e) {
             return response;
         }
-        
+
         return response;
     }
-    
-    public void initializeDefaultValues(RegexProcessResponse response) {
-        response.setBankAcId("-1");
-        response.setAmount("-1");
-        response.setAmountNegative(false);
-        response.setDate("-1");
-        response.setMerchant("-1");
-        response.setTxnNote("-1");
-        response.setBalance("-1");
-        response.setBalanceNegative(false);
+
+    /**
+     * Finds the group number (1-based) for each named group in the regex pattern.
+     * Named groups are in the format (?<name>...)
+     */
+    private Map<String, Integer> findGroupNumbers(String regexPattern) {
+        Map<String, Integer> groupNumberMap = new HashMap<>();
+        int groupCount = 0;
+        int i = 0;
         
-        response.setSenderName("-1");
-        response.setSBank("-1");
-        response.setSAcType("-1");
-        response.setSAcId("-1");
-        response.setReceiverName("-1");
-        response.setRBank("-1");
-        
-        response.setAvailLimit("-1");
-        response.setCreditLimit("-1");
-        response.setPaymentType("-1");
-        response.setCity("-1");
-        
-        response.setBillerAcId("-1");
-        response.setBillId("-1");
-        response.setBillDate("-1");
-        response.setBillPeriod("-1");
-        response.setDueDate("-1");
-        response.setMinAmtDue("-1");
-        response.setTotAmtDue("-1");
-        
-        response.setPrincipalAmount("-1");
-        response.setFrequency("-1");
-        response.setMaturityDate("-1");
-        response.setMaturityAmount("-1");
-        response.setRateOfInterest("-1");
-        
-        response.setMfNav("-1");
-        response.setMfUnits("-1");
-        response.setMfArn("-1");
-        response.setMfBalUnits("-1");
-        response.setMfSchemeBal("-1");
-        
-        response.setAmountPaid("-1");
-        response.setOfferAmount("-1");
-        response.setMinPurchaseAmt("-1");
-    }
-    
-    private void extractFields(Matcher matcher, RegexProcessResponse response, RegexProcessRequest request) {
-        int groupCount = matcher.groupCount();
-        
-        // Try to extract using named groups first (if pattern uses named groups like (?<amount>...))
-        // Java regex named groups are accessed via group("name")
-        try {
-            tryExtractNamedGroup(matcher, "bankAcId", response::setBankAcId);
-            tryExtractNamedGroup(matcher, "amount", response::setAmount);
-            tryExtractNamedGroup(matcher, "date", response::setDate);
-            tryExtractNamedGroup(matcher, "merchant", response::setMerchant);
-            tryExtractNamedGroup(matcher, "txnNote", response::setTxnNote);
-            tryExtractNamedGroup(matcher, "balance", response::setBalance);
-            tryExtractNamedGroup(matcher, "senderName", response::setSenderName);
-            tryExtractNamedGroup(matcher, "sBank", response::setSBank);
-            tryExtractNamedGroup(matcher, "sAcType", response::setSAcType);
-            tryExtractNamedGroup(matcher, "sAcId", response::setSAcId);
-            tryExtractNamedGroup(matcher, "receiverName", response::setReceiverName);
-            tryExtractNamedGroup(matcher, "rBank", response::setRBank);
-            tryExtractNamedGroup(matcher, "availLimit", response::setAvailLimit);
-            tryExtractNamedGroup(matcher, "creditLimit", response::setCreditLimit);
-            tryExtractNamedGroup(matcher, "paymentType", response::setPaymentType);
-            tryExtractNamedGroup(matcher, "city", response::setCity);
-            tryExtractNamedGroup(matcher, "billerAcId", response::setBillerAcId);
-            tryExtractNamedGroup(matcher, "billId", response::setBillId);
-            tryExtractNamedGroup(matcher, "billDate", response::setBillDate);
-            tryExtractNamedGroup(matcher, "billPeriod", response::setBillPeriod);
-            tryExtractNamedGroup(matcher, "dueDate", response::setDueDate);
-            tryExtractNamedGroup(matcher, "minAmtDue", response::setMinAmtDue);
-            tryExtractNamedGroup(matcher, "totAmtDue", response::setTotAmtDue);
-            tryExtractNamedGroup(matcher, "principalAmount", response::setPrincipalAmount);
-            tryExtractNamedGroup(matcher, "frequency", response::setFrequency);
-            tryExtractNamedGroup(matcher, "maturityDate", response::setMaturityDate);
-            tryExtractNamedGroup(matcher, "maturityAmount", response::setMaturityAmount);
-            tryExtractNamedGroup(matcher, "rateOfInterest", response::setRateOfInterest);
-            tryExtractNamedGroup(matcher, "mfNav", response::setMfNav);
-            tryExtractNamedGroup(matcher, "mfUnits", response::setMfUnits);
-            tryExtractNamedGroup(matcher, "mfArn", response::setMfArn);
-            tryExtractNamedGroup(matcher, "mfBalUnits", response::setMfBalUnits);
-            tryExtractNamedGroup(matcher, "mfSchemeBal", response::setMfSchemeBal);
-            tryExtractNamedGroup(matcher, "amountPaid", response::setAmountPaid);
-            tryExtractNamedGroup(matcher, "offerAmount", response::setOfferAmount);
-            tryExtractNamedGroup(matcher, "minPurchaseAmt", response::setMinPurchaseAmt);
-        } catch (Exception e) {
-            // Named groups not available, will use positional groups
-        }
-        
-        // Extract positional groups (groups 1, 2, 3, etc.)
-        // Note: This is a basic implementation. In production, you'd want a configuration
-        // that maps group positions to field names based on the pattern structure
-        if (groupCount > 0) {
-            // Store all matched groups - the actual mapping would depend on the pattern structure
-            // For now, we'll extract what we can and leave the rest as "-1"
-            for (int i = 1; i <= groupCount && i <= 40; i++) {
-                try {
-                    String groupValue = matcher.group(i);
-                    if (groupValue != null && !groupValue.isEmpty()) {
-                        // Basic heuristic mapping - can be enhanced with pattern-specific logic
-                        mapPositionalGroup(i, groupValue, response);
+        while (i < regexPattern.length()) {
+            if (regexPattern.charAt(i) == '\\') {
+                // Skip escaped characters (including escaped parentheses)
+                i += 2;
+                if (i > regexPattern.length()) break;
+                continue;
+            }
+            
+            if (regexPattern.charAt(i) == '(') {
+                // Check if it's a named group: (?<name>...)
+                if (i + 3 < regexPattern.length() && 
+                    regexPattern.charAt(i + 1) == '?' && 
+                    regexPattern.charAt(i + 2) == '<') {
+                    
+                    // Find the closing '>' for the group name
+                    int nameStart = i + 3;
+                    int nameEnd = regexPattern.indexOf('>', nameStart);
+                    
+                    if (nameEnd != -1) {
+                        String groupName = regexPattern.substring(nameStart, nameEnd);
+                        groupCount++;
+                        groupNumberMap.put(groupName, groupCount);
+                        i = nameEnd + 1;
+                        continue;
                     }
-                } catch (Exception e) {
-                    // Group doesn't exist - continue
+                } else if (i + 2 < regexPattern.length() && 
+                          regexPattern.charAt(i + 1) == '?') {
+                    // Non-capturing group: (?:...), (?=...), (?!...), (?<=...), (?<!...)
+                    // Skip the '?', don't increment groupCount, continue parsing normally
+                    i += 2;
+                    continue;
+                } else {
+                    // Regular capturing group
+                    groupCount++;
                 }
             }
+            
+            i++;
         }
         
-        // Set payment type from request if not extracted from pattern
-        if ("-1".equals(response.getPaymentType()) && request.getPaymentType() != null) {
-            response.setPaymentType(request.getPaymentType().name());
-        }
-        
-        // Check for negative amounts/balances in the raw message
-        String rawMsg = request.getRawMsg().toLowerCase();
-        if (rawMsg.contains("debited") || rawMsg.contains("debit")) {
-            response.setAmountNegative(true);
-        }
-        if (rawMsg.contains("withdrawal") || rawMsg.contains("withdrawn")) {
-            response.setBalanceNegative(true);
-        }
-    }
-    
-    private void tryExtractNamedGroup(Matcher matcher, String groupName, java.util.function.Consumer<String> setter) {
-        try {
-            String value = matcher.group(groupName);
-            if (value != null && !value.isEmpty() && !"-1".equals(value)) {
-                setter.accept(value);
-            }
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            // Named group doesn't exist or matcher not in valid state - ignore
-        }
-    }
-    
-    private void mapPositionalGroup(int groupIndex, String value, RegexProcessResponse response) {
-        // Basic heuristic mapping - this is a simplified approach
-        // In production, you'd want pattern-specific configuration
-        // Common patterns: group 1 = amount, group 2 = date, etc.
-        switch (groupIndex) {
-            case 1:
-                if ("-1".equals(response.getAmount())) {
-                    response.setAmount(value);
-                }
-                break;
-            case 2:
-                if ("-1".equals(response.getDate())) {
-                    response.setDate(value);
-                }
-                break;
-            case 3:
-                if ("-1".equals(response.getMerchant())) {
-                    response.setMerchant(value);
-                }
-                break;
-            case 4:
-                if ("-1".equals(response.getBalance())) {
-                    response.setBalance(value);
-                }
-                break;
-            // Add more mappings as needed based on common pattern structures
-        }
+        return groupNumberMap;
     }
 }
