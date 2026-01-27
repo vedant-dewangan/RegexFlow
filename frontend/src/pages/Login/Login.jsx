@@ -3,6 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import FormInput from '../../components/FormInput/FormInput';
 import toast from 'react-hot-toast';
+import axios from 'axios';
+import { useAuth } from '../../context/AuthContext';
+import { getDashboardRoute } from '../../utils/auth';
 import './Login.css';
 
 function Login() {
@@ -10,7 +13,8 @@ function Login() {
     email: '',
     password: '',
   });
-
+  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -21,15 +25,44 @@ function Login() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+    
     try {
-      console.log('Login data:', formData);
-      toast.success('Login successful');
-      navigate("/dashboard");
+      const response = await axios.post(
+        'http://localhost:8080/auth/login',
+        {
+          email: formData.email,
+          password: formData.password,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          withCredentials: true, // Important for session cookies
+        }
+      );
+
+      if (response.data && response.data.token) {
+        // Use AuthContext to update auth state
+        login(response.data.token, response.data.user);
+        
+        // Navigate based on user role
+        const userRole = response.data.user?.role;
+        const dashboardRoute = getDashboardRoute(userRole);
+        
+        toast.success(response.data.message || 'Login successful');
+        navigate(dashboardRoute);
+      } else {
+        toast.error('Login failed: Invalid response from server');
+      }
     } catch (error) {
-      console.log(error);
-      toast.error('Login failed');
+      console.error('Login error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Login failed';
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -63,8 +96,8 @@ function Login() {
             required
             showPasswordToggle
           />
-          <button type="submit" className="btn-submit">
-            Sign In
+          <button type="submit" className="btn-submit" disabled={isLoading}>
+            {isLoading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
         <p className="login-footer">

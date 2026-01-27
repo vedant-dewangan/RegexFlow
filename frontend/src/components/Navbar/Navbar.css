@@ -62,6 +62,7 @@
 .navbar-right {
   display: flex;
   align-items: center;
+  gap: 0.75rem;
 }
 
 .navbar-btn {
@@ -75,6 +76,18 @@
   cursor: pointer;
   display: inline-block;
   font-family: inherit;
+}
+
+.navbar-btn-dashboard {
+  background-color: transparent;
+  color: #154835;
+  border: 2px solid #154835;
+}
+
+.navbar-btn-dashboard:hover {
+  background-color: #154835;
+  color: white;
+  transform: translateY(-1px);
 }
 
 .navbar-btn-login {

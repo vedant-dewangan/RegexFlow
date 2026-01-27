@@ -1,25 +1,30 @@
-import { Link } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import './Navbar.css';
 import moneyviewLogo from '../../assets/moneyview_full_logo.svg';
+import { useAuth } from '../../context/AuthContext';
+import { getDashboardRoute } from '../../utils/auth';
 
 function Navbar() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    // Check if user is logged in (check localStorage for token or user data)
-    const token = localStorage.getItem('token') || localStorage.getItem('userToken');
-    const user = localStorage.getItem('user');
-    setIsLoggedIn(!!(token || user));
-  }, []);
+  const { isLoggedIn, logout, user } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userToken');
-    localStorage.removeItem('user');
-    setIsLoggedIn(false);
-    // Optionally redirect to landing page
-    window.location.href = '/';
+    logout();
+    navigate('/');
+  };
+
+  // Get the dashboard route based on user role
+  const getDashboardLink = () => {
+    if (!isLoggedIn) return '/login';
+    return getDashboardRoute(user?.role);
+  };
+
+  // Show "Welcome {name}" if logged in, otherwise show "Dashboard"
+  const getDashboardText = () => {
+    if (isLoggedIn && user?.name) {
+      return `Welcome ${user.name}`;
+    }
+    return 'Dashboard';
   };
 
   return (
@@ -44,6 +49,12 @@ function Navbar() {
           </Link>
         </div>
         <div className="navbar-right">
+          <Link 
+            to={getDashboardLink()} 
+            className="navbar-btn navbar-btn-dashboard"
+          >
+            {getDashboardText()}
+          </Link>
           {isLoggedIn ? (
             <button onClick={handleLogout} className="navbar-btn navbar-btn-logout">
               Logout

@@ -4,8 +4,20 @@ import FAQ from '../../components/FAQ/FAQ';
 import Footer from '../../components/Footer/Footer';
 import bannerImage from '../../assets/ic-app-banner.webp';
 import './Landing.css';
+import { useEffect } from 'react';
+import axios from 'axios';
 
 function Landing() {
+
+  useEffect(()=>{
+    const fetchData = async () => {
+    const {data} = await axios.get('http://localhost:8080/');
+    console.log(data);
+    
+    }
+    fetchData();
+  },[])
+
   return (
     <div className="landing-page">
       <Navbar />

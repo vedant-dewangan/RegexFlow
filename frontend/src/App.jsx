@@ -12,27 +12,120 @@ import AdminBank from './pages/AdminBank/AdminBank';
 import AdminRegex from './pages/AdminRegex/AdminRegex';
 import TemplateEditor from './pages/TemplateEditor/TemplateEditor';
 import NotFound from './pages/NotFound/NotFound';
+import { AuthProvider } from './context/AuthContext';
+import PublicRoute from './context/PublicRoute';
+import PrivateRoute from './context/PrivateRoute';
+import RoleBasedRoute from './context/RoleBasedRoute';
 import './App.css';
 
 function App() {
   return (
     <Router>
-      <Routes>
+      <AuthProvider>
+        <Routes>
+        {/* Public routes */}
         <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/maker/dashboard" element={<MakerDashboard />} />
-        <Route path="/maker/template/new" element={<TemplateEditor />} />
-        <Route path="/maker/template/:templateId" element={<TemplateEditor />} />
-        <Route path="/checker/dashboard" element={<CheckerDashboard />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/user" element={<AdminUser />} />
-        <Route path="/admin/bank" element={<AdminBank />} />
-        <Route path="/admin/regex" element={<AdminRegex />} />
+        <Route 
+          path="/login" 
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          } 
+        />
+        <Route 
+          path="/register" 
+          element={
+            <PublicRoute>
+              <Register />
+            </PublicRoute>
+          } 
+        />
+        
+        {/* Private routes - require authentication */}
+        {/* CUSTOMER can only access /dashboard */}
+        <Route 
+          path="/dashboard" 
+          element={
+            <RoleBasedRoute allowedRoles="CUSTOMER">
+              <Dashboard />
+            </RoleBasedRoute>
+          } 
+        />
+        
+        {/* MAKER can only access /maker/dashboard and /maker/template/* */}
+        <Route 
+          path="/maker/dashboard" 
+          element={
+            <RoleBasedRoute allowedRoles="MAKER">
+              <MakerDashboard />
+            </RoleBasedRoute>
+          } 
+        />
+        <Route 
+          path="/maker/template/new" 
+          element={
+            <RoleBasedRoute allowedRoles="MAKER">
+              <TemplateEditor />
+            </RoleBasedRoute>
+          } 
+        />
+        <Route 
+          path="/maker/template/:templateId" 
+          element={
+            <RoleBasedRoute allowedRoles="MAKER">
+              <TemplateEditor />
+            </RoleBasedRoute>
+          } 
+        />
+        
+        {/* CHECKER can only access /checker/dashboard */}
+        <Route 
+          path="/checker/dashboard" 
+          element={
+            <RoleBasedRoute allowedRoles="CHECKER">
+              <CheckerDashboard />
+            </RoleBasedRoute>
+          } 
+        />
+        
+        {/* ADMIN can only access /admin and related admin routes */}
+        <Route 
+          path="/admin" 
+          element={
+            <RoleBasedRoute allowedRoles="ADMIN">
+              <AdminDashboard />
+            </RoleBasedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/user" 
+          element={
+            <RoleBasedRoute allowedRoles="ADMIN">
+              <AdminUser />
+            </RoleBasedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/bank" 
+          element={
+            <RoleBasedRoute allowedRoles="ADMIN">
+              <AdminBank />
+            </RoleBasedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/regex" 
+          element={
+            <RoleBasedRoute allowedRoles="ADMIN">
+              <AdminRegex />
+            </RoleBasedRoute>
+          } 
+        />
         <Route path="*" element={<NotFound />} />
-      </Routes>
-      <Toaster position="top-right" />
+        </Routes>
+        <Toaster position="top-right" />
+      </AuthProvider>
     </Router>
   );
 }

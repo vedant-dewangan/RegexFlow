@@ -4,6 +4,9 @@ import Navbar from '../../components/Navbar/Navbar';
 import FormInput from '../../components/FormInput/FormInput';
 import './Register.css';
 import toast from 'react-hot-toast';
+import axios from 'axios';
+import { useAuth } from '../../context/AuthContext';
+import { getDashboardRoute } from '../../utils/auth';
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -12,7 +15,8 @@ function Register() {
     password: '',
     confirmPassword: '',
   });
-
+  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -23,19 +27,56 @@ function Register() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match');
       return;
     }
+
+    if (formData.password.length < 6) {
+      toast.error('Password must be at least 6 characters long');
+      return;
+    }
+
+    setIsLoading(true);
+    
     try {
-      console.log('Register data:', formData);
-      toast.success('Registration successful');
-      navigate("/login");
+      const response = await axios.post(
+        'http://localhost:8080/auth/register',
+        {
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          withCredentials: true, // Important for session cookies
+        }
+      );
+
+      if (response.data && response.data.token) {
+        // Use AuthContext to update auth state
+        login(response.data.token, response.data.user);
+        
+        // Navigate based on user role (new registrations default to CUSTOMER)
+        const userRole = response.data.user?.role;
+        const dashboardRoute = getDashboardRoute(userRole);
+        
+        toast.success(response.data.message || 'Registration successful');
+        navigate(dashboardRoute);
+      } else {
+        toast.error('Registration failed: Invalid response from server');
+      }
     } catch (error) {
-      console.log(error);
-      toast.error('Registration failed');
+      console.error('Registration error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Registration failed';
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -90,8 +131,8 @@ function Register() {
             required
             showPasswordToggle
           />
-          <button type="submit" className="btn-submit">
-            Create Account
+          <button type="submit" className="btn-submit" disabled={isLoading}>
+            {isLoading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
         <p className="register-footer">
