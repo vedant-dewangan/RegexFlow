@@ -15,6 +15,8 @@ import java.util.Optional;
 public interface RegexTemplateRepository extends JpaRepository<RegexTemplate,Long> {
     List<RegexTemplate> findByCreatedBy(Users createdBy);
     
+    List<RegexTemplate> findByStatus(RegexTemplateStatus status);
+    
     Optional<RegexTemplate> findBySenderHeaderAndPatternAndBankAndSmsTypeAndTransactionTypeAndPaymentTypeAndStatus(
         String senderHeader,
         String pattern,
