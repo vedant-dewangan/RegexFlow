@@ -47,6 +47,26 @@ public class RegexTemplateService {
     }
 
     public RegexTemplateDto saveAsDraft(RegexTemplateDto dto, Long userId) {
+        // Validate required fields
+        if (dto.getSenderHeader() == null || dto.getSenderHeader().isBlank()) {
+            throw new RuntimeException("Sender header is required");
+        }
+        if (dto.getPattern() == null || dto.getPattern().isBlank()) {
+            throw new RuntimeException("Pattern is required");
+        }
+        if (dto.getBankId() == null) {
+            throw new RuntimeException("Bank ID is required");
+        }
+        if (dto.getSmsType() == null) {
+            throw new RuntimeException("SMS type is required");
+        }
+        if (dto.getTransactionType() == null) {
+            throw new RuntimeException("Transaction type is required");
+        }
+        if (dto.getPaymentType() == null) {
+            throw new RuntimeException("Payment type is required");
+        }
+        
         Users user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
         
@@ -75,6 +95,26 @@ public class RegexTemplateService {
     }
 
     public RegexTemplateDto updateToPending(Long templateId, RegexTemplateDto dto, Long userId) {
+        // Validate required fields
+        if (dto.getSenderHeader() == null || dto.getSenderHeader().isBlank()) {
+            throw new RuntimeException("Sender header is required");
+        }
+        if (dto.getPattern() == null || dto.getPattern().isBlank()) {
+            throw new RuntimeException("Pattern is required");
+        }
+        if (dto.getBankId() == null) {
+            throw new RuntimeException("Bank ID is required");
+        }
+        if (dto.getSmsType() == null) {
+            throw new RuntimeException("SMS type is required");
+        }
+        if (dto.getTransactionType() == null) {
+            throw new RuntimeException("Transaction type is required");
+        }
+        if (dto.getPaymentType() == null) {
+            throw new RuntimeException("Payment type is required");
+        }
+        
         RegexTemplate existingTemplate = regexTemplateRepository.findById(templateId)
             .orElseThrow(() -> new RuntimeException("Template not found with id: " + templateId));
 

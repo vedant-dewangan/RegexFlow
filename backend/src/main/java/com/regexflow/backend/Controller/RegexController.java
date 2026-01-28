@@ -86,7 +86,7 @@ public class RegexController {
     }
 
     @PostMapping("/process")
-    public ResponseEntity<RegexProcessResponse> processRegex(
+    public ResponseEntity<?> processRegex(
             @RequestBody RegexProcessRequest request,
             HttpSession session) {
         if (!isAdminMakerChecker(session)) {
@@ -94,16 +94,32 @@ public class RegexController {
         }
 
         if (request.getRegexPattern() == null || request.getRegexPattern().isBlank()) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("{\"error\": \"Regex pattern is required\"}");
         }
 
         if (request.getRawMsg() == null || request.getRawMsg().isBlank()) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("{\"error\": \"Raw message is required\"}");
         }
 
-        RegexProcessResponse response = regexProcessService.processRegex(request);
+        if (request.getSmsType() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("{\"error\": \"SMS type is required\"}");
+        }
 
-        return ResponseEntity.ok(response);
+        if (request.getPaymentType() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("{\"error\": \"Payment type is required\"}");
+        }
+
+        try {
+            RegexProcessResponse response = regexProcessService.processRegex(request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("{\"error\": \"" + e.getMessage() + "\"}");
+        }
     }
 
     private boolean isAdmin(HttpSession session) {

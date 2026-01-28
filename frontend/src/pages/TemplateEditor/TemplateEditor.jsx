@@ -161,15 +161,25 @@ function TemplateEditor() {
     try {
       setVerifying(true);
       setVerificationResult(null);
-      const response = await axios.post('/regex/process', {
+      const requestPayload = {
         regexPattern: formData.pattern,
         rawMsg: formData.sampleRawMsg.trim(),
         smsType: formData.smsType,
         paymentType: formData.paymentType,
-        transactionType: formData.transactionType || null,
-        bankName: formData.bankName || null,
-        bankAddress: formData.bankAddress || null,
-      });
+      };
+      
+      // Only include optional fields if they have values
+      if (formData.transactionType) {
+        requestPayload.transactionType = formData.transactionType;
+      }
+      if (formData.bankName) {
+        requestPayload.bankName = formData.bankName;
+      }
+      if (formData.bankAddress) {
+        requestPayload.bankAddress = formData.bankAddress;
+      }
+      
+      const response = await axios.post('/regex/process', requestPayload);
       setVerificationResult(response.data);
       toast.success('Regex verification completed');
     } catch (error) {
@@ -181,15 +191,21 @@ function TemplateEditor() {
     }
   };
 
-  const buildDraftPayload = () => ({
-    senderHeader: formData.senderHeader.trim(),
-    pattern: formData.pattern.trim(),
-    sampleRawMsg: formData.sampleRawMsg?.trim() || null,
-    smsType: formData.smsType,
-    transactionType: formData.transactionType,
-    bankId: Number(formData.bankId),
-    paymentType: formData.paymentType,
-  });
+  const buildDraftPayload = () => {
+    const bankIdNum = Number(formData.bankId);
+    if (!formData.bankId || isNaN(bankIdNum) || bankIdNum <= 0) {
+      throw new Error('Invalid bank ID');
+    }
+    return {
+      senderHeader: formData.senderHeader.trim(),
+      pattern: formData.pattern.trim(),
+      sampleRawMsg: formData.sampleRawMsg?.trim() || null,
+      smsType: formData.smsType,
+      transactionType: formData.transactionType,
+      bankId: bankIdNum,
+      paymentType: formData.paymentType,
+    };
+  };
 
   const handleSaveDraft = async () => {
     if (!formData.senderHeader?.trim() || !formData.pattern?.trim() || !formData.bankId) {
@@ -204,7 +220,7 @@ function TemplateEditor() {
       setCurrentTemplateId(response.data.templateId);
       if (!isEditMode) navigate(`/maker/template/${response.data.templateId}`, { replace: true });
     } catch (error) {
-      const msg = error.response?.data?.error || error.response?.data?.message || 'Failed to save draft';
+      const msg = error.message || error.response?.data?.error || error.response?.data?.message || 'Failed to save draft';
       toast.error(msg);
     } finally {
       setLoading(false);
@@ -212,11 +228,6 @@ function TemplateEditor() {
   };
 
   const handleSubmitForApproval = async () => {
-    const id = currentTemplateId || templateId;
-    if (!id) {
-      toast.error('Save as draft first, then submit for approval');
-      return;
-    }
     if (!formData.senderHeader?.trim() || !formData.pattern?.trim() || !formData.bankId) {
       toast.error('Please fill sender header, pattern, and bank');
       return;
@@ -224,11 +235,24 @@ function TemplateEditor() {
     try {
       setLoading(true);
       const payload = buildDraftPayload();
+      
+      // If no templateId exists, save as draft first to get an ID
+      let id = currentTemplateId || templateId;
+      if (!id) {
+        const draftResponse = await axios.post('/regex/save-as-draft', payload);
+        id = draftResponse.data.templateId;
+        setCurrentTemplateId(id);
+        if (!isEditMode) {
+          navigate(`/maker/template/${id}`, { replace: true });
+        }
+      }
+      
+      // Now submit for approval
       await axios.put(`/regex/push/${id}`, payload);
       toast.success('Submitted for approval');
       navigate('/maker/dashboard');
     } catch (error) {
-      const msg = error.response?.data?.error || error.response?.data?.message || 'Failed to submit';
+      const msg = error.message || error.response?.data?.error || error.response?.data?.message || 'Failed to submit';
       toast.error(msg);
     } finally {
       setLoading(false);
@@ -418,6 +442,41 @@ function TemplateEditor() {
                 Sample SMS message stored with the template. Use Verify to test the regex pattern against this message.
               </small>
             </div>
+          </div>
+
+          <div className="form-actions">
+            <button
+              type="button"
+              className="btn-cancel"
+              onClick={handleCancel}
+              disabled={loading || verifying}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="btn-verify"
+              onClick={handleVerify}
+              disabled={loading || verifying}
+            >
+              {verifying ? 'Verifying...' : 'Verify'}
+            </button>
+            <button
+              type="button"
+              className="btn-draft"
+              onClick={handleSaveDraft}
+              disabled={loading || verifying}
+            >
+              Save Draft
+            </button>
+            <button
+              type="button"
+              className="btn-submit"
+              onClick={handleSubmitForApproval}
+              disabled={loading || verifying}
+            >
+              Submit for Approval
+            </button>
           </div>
 
           {verificationResult && (
@@ -703,41 +762,6 @@ function TemplateEditor() {
               </div>
             </div>
           )}
-
-          <div className="form-actions">
-            <button
-              type="button"
-              className="btn-cancel"
-              onClick={handleCancel}
-              disabled={loading || verifying}
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              className="btn-verify"
-              onClick={handleVerify}
-              disabled={loading || verifying}
-            >
-              {verifying ? 'Verifying...' : 'Verify'}
-            </button>
-            <button
-              type="button"
-              className="btn-draft"
-              onClick={handleSaveDraft}
-              disabled={loading || verifying}
-            >
-              Save Draft
-            </button>
-            <button
-              type="button"
-              className="btn-submit"
-              onClick={handleSubmitForApproval}
-              disabled={loading || verifying}
-            >
-              Submit for Approval
-            </button>
-          </div>
         </form>
       </div>
       <Footer />

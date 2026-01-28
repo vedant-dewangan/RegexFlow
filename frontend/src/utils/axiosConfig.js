@@ -38,9 +38,14 @@ export const setupAxiosInterceptors = () => {
       // Handle response errors
       if (error.response) {
         const status = error.response.status;
+        const requestUrl = error.config?.url || '';
+        
+        // Skip session expiration handling for login endpoint
+        // Login failures should be handled by the Login component
+        const isLoginEndpoint = requestUrl.includes('/auth/login');
         
         // Check if the error is due to expired/invalid token or unauthorized access
-        if (status === 401 || status === 403) {
+        if ((status === 401 || status === 403) && !isLoginEndpoint) {
           // Prevent multiple logout calls
           if (globalLogoutCallback && !error.config._retry) {
             error.config._retry = true;

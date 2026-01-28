@@ -107,7 +107,7 @@ function MakerDashboard() {
                           {template.status}
                         </span>
                       </div>
-                      {(template.status === 'DRAFT' || template.status === 'PENDING') && (
+                      {template.status === 'DRAFT' && (
                         <button
                           className="btn-edit-template"
                           onClick={() => handleEditTemplate(template.templateId)}
