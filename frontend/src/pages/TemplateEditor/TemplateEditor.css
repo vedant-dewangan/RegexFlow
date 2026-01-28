@@ -174,3 +174,156 @@
   cursor: not-allowed;
   transform: none;
 }
+
+.btn-verify {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-verify:hover:not(:disabled) {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.btn-verify:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-draft {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-draft:hover:not(:disabled) {
+  background-color: #5a6268;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+}
+
+.btn-draft:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.verification-result {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.verification-result h3 {
+  color: #154835;
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.verification-section {
+  margin-bottom: 2rem;
+}
+
+.verification-section h4 {
+  color: #154835;
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.verification-table-container {
+  overflow-x: auto;
+  background-color: white;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+}
+
+.verification-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.verification-table thead {
+  background-color: #154835;
+  color: white;
+}
+
+.verification-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid #0f3a2a;
+}
+
+.verification-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.verification-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.verification-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.verification-table td:first-child {
+  font-weight: 500;
+  color: #333;
+}
+
+.index-empty {
+  color: #999;
+  font-style: italic;
+}
+
+.index-found {
+  color: #154835;
+  font-weight: 600;
+}
+
+.value-empty {
+  color: #999;
+  font-style: italic;
+}
+
+.value-found {
+  color: #28a745;
+  font-weight: 500;
+  font-family: 'Courier New', monospace;
+}
+
+@media (max-width: 768px) {
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .btn-cancel,
+  .btn-verify,
+  .btn-draft,
+  .btn-submit {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}

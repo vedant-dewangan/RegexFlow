@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { isAuthenticated, getAuthToken, getUser, setAuthToken, setUser, clearAuth } from '../utils/auth';
+import { setLogoutCallback, setupAxiosInterceptors } from '../utils/axiosConfig';
 
 const AuthContext = createContext(null);
 
@@ -18,7 +19,28 @@ export const AuthProvider = ({ children }) => {
 
   // Check authentication status on mount and when needed
   useEffect(() => {
+    // Setup axios interceptors for token expiration handling
+    setupAxiosInterceptors();
+    
     checkAuth();
+    
+    // Register logout callback for axios interceptor
+    const handleAutoLogout = () => {
+      clearAuth();
+      setIsLoggedIn(false);
+      setUserState(null);
+      // Redirect to login page
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 500);
+    };
+    
+    setLogoutCallback(handleAutoLogout);
+    
+    // Cleanup: remove callback on unmount
+    return () => {
+      setLogoutCallback(null);
+    };
   }, []);
 
   const checkAuth = () => {

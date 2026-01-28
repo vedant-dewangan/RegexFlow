@@ -39,3 +39,235 @@
 .admin-bank-card p {
   color: #666;
 }
+
+.bank-header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.btn-add-bank {
+  padding: 0.75rem 1.5rem;
+  background-color: #154835;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-add-bank:hover {
+  background-color: #0f3a2a;
+}
+
+.create-bank-form {
+  background-color: #f9f9f9;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  border: 1px solid #e0e0e0;
+}
+
+.create-bank-form h3 {
+  color: #154835;
+  margin-bottom: 1.5rem;
+  font-size: 1.3rem;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #333;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #154835;
+  box-shadow: 0 0 0 2px rgba(21, 72, 53, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+.btn-submit {
+  padding: 0.75rem 1.5rem;
+  background-color: #154835;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background-color: #0f3a2a;
+}
+
+.btn-submit:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-cancel {
+  padding: 0.75rem 1.5rem;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-cancel:hover:not(:disabled) {
+  background-color: #5a6268;
+}
+
+.btn-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.loading-text,
+.no-data-text {
+  color: #666;
+  text-align: center;
+  padding: 2rem;
+  font-size: 1rem;
+}
+
+.banks-table-container {
+  overflow-x: auto;
+  margin-top: 1.5rem;
+}
+
+.banks-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.banks-table thead {
+  background-color: #154835;
+  color: white;
+}
+
+.banks-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid #0f3a2a;
+}
+
+.banks-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.banks-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.banks-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.bank-name {
+  font-weight: 500;
+  color: #154835;
+}
+
+.bank-address {
+  color: #666;
+  max-width: 300px;
+  word-wrap: break-word;
+}
+
+.template-count {
+  display: inline-block;
+  padding: 0.3rem 0.6rem;
+  background-color: #e7f3ff;
+  color: #0066cc;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.no-templates {
+  color: #999;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .bank-header-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .btn-add-bank {
+    width: 100%;
+  }
+
+  .banks-table-container {
+    overflow-x: scroll;
+  }
+
+  .banks-table {
+    font-size: 0.85rem;
+  }
+
+  .banks-table th,
+  .banks-table td {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .bank-address {
+    max-width: 200px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .btn-submit,
+  .btn-cancel {
+    width: 100%;
+  }
+}

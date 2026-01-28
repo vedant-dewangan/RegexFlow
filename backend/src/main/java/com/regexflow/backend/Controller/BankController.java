@@ -39,7 +39,7 @@ public class BankController {
 
     @GetMapping
     public ResponseEntity<List<BankDto>> getAllBanks(HttpSession session) {
-        if (!isAdmin(session)) {
+        if (isCustomer(session)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         return ResponseEntity.ok(bankService.getAllBanks());
@@ -50,5 +50,12 @@ public class BankController {
             && session.getAttribute("token") != null
             && session.getAttribute("userId") != null
             && UserRole.ADMIN.name().equals(String.valueOf(session.getAttribute("userRole")));
+    }
+
+    private boolean isCustomer(HttpSession session) {
+        return session != null
+            && session.getAttribute("token") != null
+            && session.getAttribute("userId") != null
+            && UserRole.CUSTOMER.name().equals(String.valueOf(session.getAttribute("userRole")));
     }
 }

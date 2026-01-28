@@ -39,3 +39,127 @@
 .admin-user-card p {
   color: #666;
 }
+
+.users-table-container {
+  overflow-x: auto;
+  margin-top: 1.5rem;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.users-table thead {
+  background-color: #154835;
+  color: white;
+}
+
+.users-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid #0f3a2a;
+}
+
+.users-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.users-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.users-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.role-admin {
+  background-color: #dc3545;
+  color: white;
+}
+
+.role-maker {
+  background-color: #007bff;
+  color: white;
+}
+
+.role-checker {
+  background-color: #28a745;
+  color: white;
+}
+
+.role-customer {
+  background-color: #6c757d;
+  color: white;
+}
+
+.role-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background-color: white;
+  cursor: pointer;
+  min-width: 120px;
+}
+
+.role-select:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.role-select:focus {
+  outline: none;
+  border-color: #154835;
+  box-shadow: 0 0 0 2px rgba(21, 72, 53, 0.1);
+}
+
+.btn-update-role {
+  padding: 0.5rem 1rem;
+  background-color: #154835;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-update-role:hover:not(:disabled) {
+  background-color: #0f3a2a;
+}
+
+.btn-update-role:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+@media (max-width: 768px) {
+  .users-table-container {
+    overflow-x: scroll;
+  }
+
+  .users-table {
+    font-size: 0.85rem;
+  }
+
+  .users-table th,
+  .users-table td {
+    padding: 0.75rem 0.5rem;
+  }
+}
