@@ -1,11 +1,16 @@
 package com.regexflow.backend.Enums;
 
 public enum PaymentType {
+
+    // Digital
     UPI,
     NET_BANKING,
-    CHEQUE_PAYMENT,
-    CASH_DEPOSIT,
-    CASH_WITHDRAWAL,
+
+    // Cards
     CREDIT_CARD,
-    DEBIT_CARD
+    DEBIT_CARD,
+
+    // Physical
+    CASH,
+    CHEQUE,
 }

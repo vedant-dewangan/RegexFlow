@@ -3,6 +3,7 @@ package com.regexflow.backend.Entity;
 import com.regexflow.backend.Enums.PaymentType;
 import com.regexflow.backend.Enums.RegexTemplateStatus;
 import com.regexflow.backend.Enums.SmsType;
+import com.regexflow.backend.Enums.TransactionType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,9 +27,17 @@ public class RegexTemplate {
     @Column(nullable=false)
     private String pattern;
 
+    @Lob
+    @Column(name = "sample_raw_msg")
+    private String sampleRawMsg;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "sms_type",nullable=false)
     private SmsType smsType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "transaction_type",nullable=false)
+    private TransactionType transactionType;
 
     // Current lifecycle state: DRAFT, PENDING, VERIFIED, DEPRECATED
     @Column(nullable=false)

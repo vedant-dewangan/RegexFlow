@@ -2,6 +2,7 @@ package com.regexflow.backend.Dto;
 
 import com.regexflow.backend.Enums.PaymentType;
 import com.regexflow.backend.Enums.SmsType;
+import com.regexflow.backend.Enums.TransactionType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,5 +17,5 @@ public class RegexProcessRequest {
     private String regexPattern;
     private String rawMsg;
     private String bankName;
-    private String transactionType;
+    private TransactionType transactionType;
 }

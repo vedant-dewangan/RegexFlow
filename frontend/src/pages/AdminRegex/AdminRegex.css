@@ -39,3 +39,49 @@
 .admin-regex-card p {
   color: #666;
 }
+
+.admin-regex-subtitle {
+  margin-bottom: 1.5rem;
+}
+
+.admin-regex-loading,
+.admin-regex-empty {
+  color: #666;
+  padding: 2rem;
+  text-align: center;
+}
+
+.admin-regex-table-wrapper {
+  overflow-x: auto;
+}
+
+.admin-regex-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-regex-table th,
+.admin-regex-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.admin-regex-table th {
+  background: #f8f9fa;
+  color: #154835;
+  font-weight: 600;
+}
+
+.admin-regex-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.admin-regex-status {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 500;
+}

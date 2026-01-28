@@ -4,7 +4,6 @@ import com.regexflow.backend.Dto.RegexTemplateDto;
 import com.regexflow.backend.Entity.RegexTemplate;
 import com.regexflow.backend.Entity.Users;
 import com.regexflow.backend.Entity.Bank;
-import com.regexflow.backend.Entity.AuditLog;
 
 public class RegexTemplateMapper {
 
@@ -17,9 +16,12 @@ public class RegexTemplateMapper {
         dto.setTemplateId(template.getTemplateId());
         dto.setSenderHeader(template.getSenderHeader());
         dto.setPattern(template.getPattern());
+        dto.setSampleRawMsg(template.getSampleRawMsg());
         dto.setSmsType(template.getSmsType());
+        dto.setTransactionType(template.getTransactionType());
         dto.setStatus(template.getStatus());
         dto.setPaymentType(template.getPaymentType());
+        dto.setCreatedAt(template.getCreatedAt());
 
         if (template.getCreatedBy() != null) {
             dto.setCreatedById(template.getCreatedBy().getUId());
@@ -47,7 +49,9 @@ public class RegexTemplateMapper {
         template.setTemplateId(dto.getTemplateId());
         template.setSenderHeader(dto.getSenderHeader());
         template.setPattern(dto.getPattern());
+        template.setSampleRawMsg(dto.getSampleRawMsg());
         template.setSmsType(dto.getSmsType());
+        template.setTransactionType(dto.getTransactionType());
         template.setStatus(dto.getStatus());
         template.setCreatedAt(dto.getCreatedAt());
         template.setPaymentType(dto.getPaymentType());

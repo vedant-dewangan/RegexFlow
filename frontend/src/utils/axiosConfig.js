@@ -2,6 +2,11 @@ import axios from 'axios';
 import { clearAuth } from './auth';
 import toast from 'react-hot-toast';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+axios.defaults.baseURL = API_BASE;
+axios.defaults.withCredentials = true;
+axios.defaults.headers.common['Content-Type'] = 'application/json';
+
 // Global logout callback - will be set by AuthContext
 let globalLogoutCallback = null;
 let isInterceptorSetup = false;

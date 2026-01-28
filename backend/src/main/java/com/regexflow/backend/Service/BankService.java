@@ -18,7 +18,7 @@ public class BankService {
     }
 
     public BankDto createBank(BankDto bankDto) {
-        if(bankRepository.existsByAddress(bankDto.getAddress()) && bankRepository.existsByName(bankDto.getName())){
+        if(bankRepository.existsByAddress(bankDto.getAddress()) || bankRepository.existsByName(bankDto.getName())){
             throw new RuntimeException("Bank already exists");
         }
         Bank bank = BankMapper.toEntity(bankDto);

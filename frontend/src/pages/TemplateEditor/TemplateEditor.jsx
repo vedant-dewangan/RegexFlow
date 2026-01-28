@@ -2,10 +2,17 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
-import FormInput from '../../components/FormInput/FormInput';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../context/AuthContext';
 import './TemplateEditor.css';
+
+const PAYMENT_TYPES = ['UPI', 'NET_BANKING', 'CREDIT_CARD', 'DEBIT_CARD', 'CASH', 'CHEQUE'];
+const TRANSACTION_TYPES = [
+  'UPI_CREDIT', 'UPI_DEBIT', 'ATM_WITHDRAWAL', 'CASH_DEPOSIT',
+  'ELECTRICITY_BILL', 'MOBILE_RECHARGE', 'EMI_DEBIT', 'LOAN_CREDIT',
+  'CREDIT_CARD_PAYMENT', 'DEBIT_CARD_SPEND', 'MUTUAL_FUND_PURCHASE', 'FIXED_DEPOSIT_MATURITY',
+];
 
 // Component to render a verification result row
 function VerificationRow({ label, field }) {
@@ -36,18 +43,20 @@ function VerificationRow({ label, field }) {
 
 function TemplateEditor() {
   const { templateId } = useParams();
-  const isEditMode = !!templateId;
+  const { user } = useAuth();
+  const isEditMode = !!templateId && templateId !== 'new';
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
+    senderHeader: '',
     bankId: '',
     bankName: '',
     bankAddress: '',
     smsType: 'DEBIT',
     paymentType: 'UPI',
-    transactionType: '',
-    regexPattern: '',
-    rawMsg: '',
+    transactionType: 'UPI_DEBIT',
+    pattern: '',
+    sampleRawMsg: '',
   });
 
   const [banks, setBanks] = useState([]);
@@ -55,27 +64,22 @@ function TemplateEditor() {
   const [fetching, setFetching] = useState(isEditMode);
   const [verifying, setVerifying] = useState(false);
   const [verificationResult, setVerificationResult] = useState(null);
+  const [currentTemplateId, setCurrentTemplateId] = useState(null);
 
-  // Helper function to get bank ID (handles both bId and bid)
-  const getBankId = (bank) => {
-    return bank.bId || bank.bid;
-  };
+  const getBankId = (bank) => bank.bId ?? bank.bid;
 
   useEffect(() => {
     fetchBanks();
-    if (isEditMode) {
+    if (isEditMode && user?.userId) {
       fetchTemplate();
+    } else if (isEditMode && !user?.userId) {
+      setFetching(false);
     }
-  }, [templateId]);
+  }, [templateId, user?.userId]);
 
   const fetchBanks = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/bank', {
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await axios.get('/bank');
       setBanks(response.data);
     } catch (error) {
       console.error('Error fetching banks:', error);
@@ -84,19 +88,47 @@ function TemplateEditor() {
   };
 
   const fetchTemplate = async () => {
+    if (!user?.userId) return;
     try {
       setFetching(true);
-      // TODO: Replace with actual API endpoint when available
-      toast.error('Template editing not yet implemented');
-      navigate('/maker/dashboard');
+      const response = await axios.get(`/regex/${user.userId}`);
+      const templates = response.data;
+      const template = templates.find((t) => String(t.templateId) === String(templateId));
+      if (!template) {
+        toast.error('Template not found');
+        navigate('/maker/dashboard');
+        return;
+      }
+      setCurrentTemplateId(template.templateId);
+      const bankAddr = banks.length
+        ? (banks.find((x) => String(getBankId(x)) === String(template.bankId))?.address || '')
+        : '';
+      setFormData({
+        senderHeader: template.senderHeader || '',
+        bankId: String(template.bankId || ''),
+        bankName: template.bankName || '',
+        bankAddress: bankAddr,
+        smsType: template.smsType || 'DEBIT',
+        paymentType: template.paymentType || 'UPI',
+        transactionType: template.transactionType || 'UPI_DEBIT',
+        pattern: template.pattern || '',
+        sampleRawMsg: template.sampleRawMsg || '',
+      });
     } catch (error) {
       console.error('Error fetching template:', error);
-      toast.error('Failed to load template');
+      toast.error(error.response?.data?.message || 'Failed to load template');
       navigate('/maker/dashboard');
     } finally {
       setFetching(false);
     }
   };
+
+  useEffect(() => {
+    if (banks.length && formData.bankId && !formData.bankAddress) {
+      const b = banks.find((x) => String(getBankId(x)) === formData.bankId);
+      if (b?.address) setFormData((prev) => ({ ...prev, bankAddress: b.address }));
+    }
+  }, [banks, formData.bankId, formData.bankAddress]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -122,58 +154,85 @@ function TemplateEditor() {
   };
 
   const handleVerify = async () => {
-    if (!formData.regexPattern || !formData.rawMsg) {
-      toast.error('Please enter both regex pattern and raw message');
+    if (!formData.pattern?.trim() || !formData.sampleRawMsg?.trim()) {
+      toast.error('Please enter both regex pattern and sample raw message');
       return;
     }
-
-    if (!formData.bankId || !formData.bankAddress) {
-      toast.error('Please select a bank');
-      return;
-    }
-
     try {
       setVerifying(true);
       setVerificationResult(null);
-
-      const response = await axios.post(
-        'http://localhost:8080/regex/process',
-        {
-          bankAddress: formData.bankAddress,
-          smsType: formData.smsType,
-          paymentType: formData.paymentType,
-          regexPattern: formData.regexPattern,
-          rawMsg: formData.rawMsg,
-          bankName: formData.bankName,
-          transactionType: formData.transactionType || null,
-        },
-        {
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
+      const response = await axios.post('/regex/process', {
+        regexPattern: formData.pattern,
+        rawMsg: formData.sampleRawMsg.trim(),
+        smsType: formData.smsType,
+        paymentType: formData.paymentType,
+        transactionType: formData.transactionType || null,
+        bankName: formData.bankName || null,
+        bankAddress: formData.bankAddress || null,
+      });
       setVerificationResult(response.data);
       toast.success('Regex verification completed');
     } catch (error) {
       console.error('Error verifying regex:', error);
-      toast.error(error.response?.data?.message || 'Failed to verify regex pattern');
+      toast.error(error.response?.data?.error || error.response?.data?.message || 'Failed to verify regex');
       setVerificationResult(null);
     } finally {
       setVerifying(false);
     }
   };
 
-  const handleSaveDraft = () => {
-    // TODO: Implement save draft functionality
-    toast.info('Save Draft functionality will be implemented soon');
+  const buildDraftPayload = () => ({
+    senderHeader: formData.senderHeader.trim(),
+    pattern: formData.pattern.trim(),
+    sampleRawMsg: formData.sampleRawMsg?.trim() || null,
+    smsType: formData.smsType,
+    transactionType: formData.transactionType,
+    bankId: Number(formData.bankId),
+    paymentType: formData.paymentType,
+  });
+
+  const handleSaveDraft = async () => {
+    if (!formData.senderHeader?.trim() || !formData.pattern?.trim() || !formData.bankId) {
+      toast.error('Please fill sender header, pattern, and bank');
+      return;
+    }
+    try {
+      setLoading(true);
+      const payload = buildDraftPayload();
+      const response = await axios.post('/regex/save-as-draft', payload);
+      toast.success('Draft saved successfully');
+      setCurrentTemplateId(response.data.templateId);
+      if (!isEditMode) navigate(`/maker/template/${response.data.templateId}`, { replace: true });
+    } catch (error) {
+      const msg = error.response?.data?.error || error.response?.data?.message || 'Failed to save draft';
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSubmitForApproval = () => {
-    // TODO: Implement submit for approval functionality
-    toast.info('Submit for Approval functionality will be implemented soon');
+  const handleSubmitForApproval = async () => {
+    const id = currentTemplateId || templateId;
+    if (!id) {
+      toast.error('Save as draft first, then submit for approval');
+      return;
+    }
+    if (!formData.senderHeader?.trim() || !formData.pattern?.trim() || !formData.bankId) {
+      toast.error('Please fill sender header, pattern, and bank');
+      return;
+    }
+    try {
+      setLoading(true);
+      const payload = buildDraftPayload();
+      await axios.put(`/regex/push/${id}`, payload);
+      toast.success('Submitted for approval');
+      navigate('/maker/dashboard');
+    } catch (error) {
+      const msg = error.response?.data?.error || error.response?.data?.message || 'Failed to submit';
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {
@@ -204,10 +263,28 @@ function TemplateEditor() {
         <form className="template-editor-form" onSubmit={(e) => e.preventDefault()}>
           <div className="form-section">
             <h2>Template Details</h2>
+
+            <div className="form-input-group">
+              <label htmlFor="senderHeader" className="form-input-label">
+                Sender Header
+                <span className="required-asterisk">*</span>
+              </label>
+              <input
+                id="senderHeader"
+                name="senderHeader"
+                type="text"
+                placeholder="e.g. AXISBK, HDFCBK"
+                value={formData.senderHeader}
+                onChange={handleChange}
+                required
+                className="form-input"
+              />
+              <small className="form-hint">SMS sender identifier (e.g. bank short code)</small>
+            </div>
             
             <div className="form-input-group">
               <label htmlFor="bankId" className="form-input-label">
-                Bank Name
+                Bank
                 <span className="required-asterisk">*</span>
               </label>
               <select
@@ -237,11 +314,11 @@ function TemplateEditor() {
               <textarea
                 id="bankAddress"
                 name="bankAddress"
-                placeholder="Bank address will be auto-populated when you select a bank"
+                placeholder="Auto-filled when you select a bank"
                 value={formData.bankAddress}
                 onChange={handleChange}
                 className="form-textarea"
-                rows="3"
+                rows="2"
                 readOnly
               />
             </div>
@@ -278,13 +355,9 @@ function TemplateEditor() {
                   required
                   className="form-select"
                 >
-                  <option value="UPI">UPI</option>
-                  <option value="NET_BANKING">NET_BANKING</option>
-                  <option value="CHEQUE_PAYMENT">CHEQUE_PAYMENT</option>
-                  <option value="CASH_DEPOSIT">CASH_DEPOSIT</option>
-                  <option value="CASH_WITHDRAWAL">CASH_WITHDRAWAL</option>
-                  <option value="CREDIT_CARD">CREDIT_CARD</option>
-                  <option value="DEBIT_CARD">DEBIT_CARD</option>
+                  {PAYMENT_TYPES.map((pt) => (
+                    <option key={pt} value={pt}>{pt}</option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -292,58 +365,57 @@ function TemplateEditor() {
             <div className="form-input-group">
               <label htmlFor="transactionType" className="form-input-label">
                 Transaction Type
+                <span className="required-asterisk">*</span>
               </label>
               <select
                 id="transactionType"
                 name="transactionType"
                 value={formData.transactionType}
                 onChange={handleChange}
+                required
                 className="form-select"
               >
-                <option value="">Select transaction type (optional)</option>
-                <option value="EMI_INSTALLMENT">EMI_INSTALLMENT</option>
-                <option value="LOAN_REPAYMENT">LOAN_REPAYMENT</option>
-                <option value="CREDIT_CARD_BILL_PAYMENT">CREDIT_CARD_BILL_PAYMENT</option>
+                {TRANSACTION_TYPES.map((tt) => (
+                  <option key={tt} value={tt}>{tt}</option>
+                ))}
               </select>
             </div>
 
             <div className="form-input-group">
-              <label htmlFor="regexPattern" className="form-input-label">
+              <label htmlFor="pattern" className="form-input-label">
                 Regex Pattern
                 <span className="required-asterisk">*</span>
               </label>
               <textarea
-                id="regexPattern"
-                name="regexPattern"
-                placeholder="e.g., Rs\\.(\\d+\\.?\\d*)\\s+debited\\s+from\\s+A/c\\s+(\\d+)"
-                value={formData.regexPattern}
+                id="pattern"
+                name="pattern"
+                placeholder="e.g. Rs\\.(?<amount>\\d+(?:\\.\\d{2})?)\\s+debited\\s+from\\s+A/c\\s+(?<accountNumber>\\d+)"
+                value={formData.pattern}
                 onChange={handleChange}
                 required
                 className="form-textarea"
                 rows="4"
               />
               <small className="form-hint">
-                Enter the regex pattern to match SMS messages
+                Use named groups e.g. (?&lt;amount&gt;\\d+) for extraction
               </small>
             </div>
 
             <div className="form-input-group">
-              <label htmlFor="rawMsg" className="form-input-label">
-                Raw Message
-                <span className="required-asterisk">*</span>
+              <label htmlFor="sampleRawMsg" className="form-input-label">
+                Sample Raw Message
               </label>
               <textarea
-                id="rawMsg"
-                name="rawMsg"
-                placeholder="Enter a sample SMS message to test the regex pattern"
-                value={formData.rawMsg}
+                id="sampleRawMsg"
+                name="sampleRawMsg"
+                placeholder="e.g. Rs.500.00 debited from A/c XX1234 on 01-Jan-25. Avl Bal: Rs.10000.00"
+                value={formData.sampleRawMsg}
                 onChange={handleChange}
-                required
                 className="form-textarea"
                 rows="4"
               />
               <small className="form-hint">
-                Enter a sample SMS message to verify the regex pattern
+                Sample SMS message stored with the template. Use Verify to test the regex pattern against this message.
               </small>
             </div>
           </div>
