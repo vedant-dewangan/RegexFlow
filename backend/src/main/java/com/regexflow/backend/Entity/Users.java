@@ -38,7 +38,4 @@ public class Users {
     @OneToMany(mappedBy = "createdBy")
     private List<RegexTemplate> regexTemplates;
 
-    @OneToMany(mappedBy = "user")
-    private List<Sms> smsList;
-
 }
