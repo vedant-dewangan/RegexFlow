@@ -37,6 +37,11 @@ public class AuditLog {
         this.verifiedAt = LocalDateTime.now();
     }
 
+    @PreUpdate
+    public void preUpdate(){
+        this.verifiedAt = LocalDateTime.now();
+    }
+
 
     @OneToOne(optional = false)
     @JoinColumn(name = "template_id",unique = true)

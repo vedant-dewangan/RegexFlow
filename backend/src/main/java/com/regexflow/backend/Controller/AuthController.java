@@ -5,9 +5,11 @@ import com.regexflow.backend.Dto.LoginResponse;
 import com.regexflow.backend.Dto.RegisterRequest;
 import com.regexflow.backend.Service.AuthService;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -32,7 +34,7 @@ public class AuthController {
      */
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(
-            @RequestBody LoginRequest request,  // Gets email & password from JSON body
+            @Valid @RequestBody LoginRequest request,  // Gets email & password from JSON body
             HttpSession session) {  // Spring automatically provides the session
         try {
             LoginResponse response = authService.login(request, session);
@@ -54,7 +56,7 @@ public class AuthController {
      */
     @PostMapping("/register")
     public ResponseEntity<LoginResponse> register(
-            @RequestBody RegisterRequest request,  // Gets name, email, password from JSON
+            @Valid @RequestBody RegisterRequest request,  // Gets name, email, password from JSON
             HttpSession session) {
         try {
             LoginResponse response = authService.register(request, session);
@@ -64,5 +66,25 @@ public class AuthController {
             errorResponse.setMessage("Registration failed: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
+    }
+
+    /**
+     * Exception handler for validation errors
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<LoginResponse> handleValidationExceptions(
+            MethodArgumentNotValidException ex) {
+        StringBuilder errorMessage = new StringBuilder();
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String message = error.getDefaultMessage();
+            if (errorMessage.length() > 0) {
+                errorMessage.append(", ");
+            }
+            errorMessage.append(message);
+        });
+        
+        LoginResponse errorResponse = new LoginResponse();
+        errorResponse.setMessage(errorMessage.toString());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 }

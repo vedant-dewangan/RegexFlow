@@ -7,9 +7,12 @@ import com.regexflow.backend.Enums.UserRole;
 import com.regexflow.backend.Service.RegexProcessService;
 import com.regexflow.backend.Service.RegexTemplateService;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -48,7 +51,7 @@ public class RegexController {
 
     @PostMapping("/save-as-draft")
     public ResponseEntity<?> saveAsDraft(
-            @RequestBody RegexTemplateDto dto,
+            @Valid @RequestBody RegexTemplateDto dto,
             HttpSession session) {
         if (!isMaker(session)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -66,7 +69,7 @@ public class RegexController {
     @PutMapping("/push/{templateId}")
     public ResponseEntity<?> pushTemplate(
             @PathVariable Long templateId,
-            @RequestBody RegexTemplateDto dto,
+            @Valid @RequestBody RegexTemplateDto dto,
             HttpSession session) {
         if (!isMaker(session)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -146,5 +149,23 @@ public class RegexController {
         return UserRole.ADMIN.name().equals(userRole)
             || UserRole.MAKER.name().equals(userRole)
             || UserRole.CHECKER.name().equals(userRole);
+    }
+
+    /**
+     * Exception handler for validation errors
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<String> handleValidationExceptions(
+            MethodArgumentNotValidException ex) {
+        StringBuilder errorMessage = new StringBuilder();
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String message = error.getDefaultMessage();
+            if (errorMessage.length() > 0) {
+                errorMessage.append(", ");
+            }
+            errorMessage.append(message);
+        });
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body("{\"error\": \"" + errorMessage.toString() + "\"}");
     }
 }

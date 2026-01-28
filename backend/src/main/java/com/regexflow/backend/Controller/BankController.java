@@ -4,14 +4,13 @@ import com.regexflow.backend.Dto.BankDto;
 import com.regexflow.backend.Enums.UserRole;
 import com.regexflow.backend.Service.BankService;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -25,7 +24,7 @@ public class BankController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<?> createBank(@RequestBody BankDto bankDto, HttpSession session) {
+    public ResponseEntity<?> createBank(@Valid @RequestBody BankDto bankDto, HttpSession session) {
         if (!isAdmin(session)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -57,5 +56,22 @@ public class BankController {
             && session.getAttribute("token") != null
             && session.getAttribute("userId") != null
             && UserRole.CUSTOMER.name().equals(String.valueOf(session.getAttribute("userRole")));
+    }
+
+    /**
+     * Exception handler for validation errors
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<String> handleValidationExceptions(
+            MethodArgumentNotValidException ex) {
+        StringBuilder errorMessage = new StringBuilder();
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String message = error.getDefaultMessage();
+            if (errorMessage.length() > 0) {
+                errorMessage.append(", ");
+            }
+            errorMessage.append(message);
+        });
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage.toString());
     }
 }

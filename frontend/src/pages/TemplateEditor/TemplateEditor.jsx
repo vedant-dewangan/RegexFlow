@@ -199,7 +199,7 @@ function TemplateEditor() {
     return {
       senderHeader: formData.senderHeader.trim(),
       pattern: formData.pattern.trim(),
-      sampleRawMsg: formData.sampleRawMsg?.trim() || null,
+      sampleRawMsg: formData.sampleRawMsg.trim(),
       smsType: formData.smsType,
       transactionType: formData.transactionType,
       bankId: bankIdNum,
@@ -208,8 +208,39 @@ function TemplateEditor() {
   };
 
   const handleSaveDraft = async () => {
-    if (!formData.senderHeader?.trim() || !formData.pattern?.trim() || !formData.bankId) {
-      toast.error('Please fill sender header, pattern, and bank');
+    // Validate all required fields
+    if (!formData.senderHeader || !formData.senderHeader.trim()) {
+      toast.error('Sender Header is required and cannot be empty');
+      return;
+    }
+
+    if (!formData.pattern || !formData.pattern.trim()) {
+      toast.error('Regex Pattern is required and cannot be empty');
+      return;
+    }
+
+    if (!formData.bankId || !formData.bankId.toString().trim()) {
+      toast.error('Bank selection is required');
+      return;
+    }
+
+    if (!formData.smsType) {
+      toast.error('SMS Type is required');
+      return;
+    }
+
+    if (!formData.paymentType) {
+      toast.error('Payment Type is required');
+      return;
+    }
+
+    if (!formData.transactionType) {
+      toast.error('Transaction Type is required');
+      return;
+    }
+
+    if (!formData.sampleRawMsg || !formData.sampleRawMsg.trim()) {
+      toast.error('Sample Raw Message is required and cannot be empty');
       return;
     }
     try {
@@ -228,8 +259,39 @@ function TemplateEditor() {
   };
 
   const handleSubmitForApproval = async () => {
-    if (!formData.senderHeader?.trim() || !formData.pattern?.trim() || !formData.bankId) {
-      toast.error('Please fill sender header, pattern, and bank');
+    // Validate all required fields
+    if (!formData.senderHeader || !formData.senderHeader.trim()) {
+      toast.error('Sender Header is required and cannot be empty');
+      return;
+    }
+
+    if (!formData.pattern || !formData.pattern.trim()) {
+      toast.error('Regex Pattern is required and cannot be empty');
+      return;
+    }
+
+    if (!formData.bankId || !formData.bankId.toString().trim()) {
+      toast.error('Bank selection is required');
+      return;
+    }
+
+    if (!formData.smsType) {
+      toast.error('SMS Type is required');
+      return;
+    }
+
+    if (!formData.paymentType) {
+      toast.error('Payment Type is required');
+      return;
+    }
+
+    if (!formData.transactionType) {
+      toast.error('Transaction Type is required');
+      return;
+    }
+
+    if (!formData.sampleRawMsg || !formData.sampleRawMsg.trim()) {
+      toast.error('Sample Raw Message is required and cannot be empty');
       return;
     }
     try {
@@ -428,6 +490,7 @@ function TemplateEditor() {
             <div className="form-input-group">
               <label htmlFor="sampleRawMsg" className="form-input-label">
                 Sample Raw Message
+                <span className="required-asterisk">*</span>
               </label>
               <textarea
                 id="sampleRawMsg"
@@ -437,6 +500,7 @@ function TemplateEditor() {
                 onChange={handleChange}
                 className="form-textarea"
                 rows="4"
+                required
               />
               <small className="form-hint">
                 Sample SMS message stored with the template. Use Verify to test the regex pattern against this message.

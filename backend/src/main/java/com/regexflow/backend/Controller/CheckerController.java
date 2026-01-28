@@ -93,15 +93,24 @@ public class CheckerController {
         
         try {
             Long checkerId = (Long) session.getAttribute("userId");
+            if (checkerId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("{\"error\": \"User ID not found in session\"}");
+            }
             RegexTemplateDto approvedTemplate = checkerService.approveTemplate(templateId, checkerId);
             return ResponseEntity.ok(approvedTemplate);
         } catch (RuntimeException e) {
-            if (e.getMessage().contains("not found")) {
+            String errorMessage = e.getMessage() != null ? e.getMessage().replace("\"", "\\\"") : "Unknown error";
+            if (errorMessage.contains("not found")) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("{\"error\": \"" + e.getMessage() + "\"}");
+                    .body("{\"error\": \"" + errorMessage + "\"}");
             }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body("{\"error\": \"" + e.getMessage() + "\"}");
+                .body("{\"error\": \"" + errorMessage + "\"}");
+        } catch (Exception e) {
+            String errorMessage = e.getMessage() != null ? e.getMessage().replace("\"", "\\\"") : "Unknown error occurred";
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("{\"error\": \"" + errorMessage + "\"}");
         }
     }
 
@@ -120,15 +129,24 @@ public class CheckerController {
         
         try {
             Long checkerId = (Long) session.getAttribute("userId");
+            if (checkerId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("{\"error\": \"User ID not found in session\"}");
+            }
             RegexTemplateDto rejectedTemplate = checkerService.rejectTemplate(templateId, checkerId);
             return ResponseEntity.ok(rejectedTemplate);
         } catch (RuntimeException e) {
-            if (e.getMessage().contains("not found")) {
+            String errorMessage = e.getMessage() != null ? e.getMessage().replace("\"", "\\\"") : "Unknown error";
+            if (errorMessage.contains("not found")) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("{\"error\": \"" + e.getMessage() + "\"}");
+                    .body("{\"error\": \"" + errorMessage + "\"}");
             }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body("{\"error\": \"" + e.getMessage() + "\"}");
+                .body("{\"error\": \"" + errorMessage + "\"}");
+        } catch (Exception e) {
+            String errorMessage = e.getMessage() != null ? e.getMessage().replace("\"", "\\\"") : "Unknown error occurred";
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("{\"error\": \"" + errorMessage + "\"}");
         }
     }
 

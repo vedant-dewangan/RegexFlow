@@ -30,6 +30,27 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Validate all required fields
+    if (!formData.name || !formData.name.trim()) {
+      toast.error('Name is required and cannot be empty');
+      return;
+    }
+
+    if (!formData.email || !formData.email.trim()) {
+      toast.error('Email is required and cannot be empty');
+      return;
+    }
+
+    if (!formData.password || !formData.password.trim()) {
+      toast.error('Password is required and cannot be empty');
+      return;
+    }
+
+    if (!formData.confirmPassword || !formData.confirmPassword.trim()) {
+      toast.error('Confirm Password is required and cannot be empty');
+      return;
+    }
+    
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match');
       return;

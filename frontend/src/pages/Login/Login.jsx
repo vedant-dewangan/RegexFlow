@@ -27,6 +27,18 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate all required fields
+    if (!formData.email || !formData.email.trim()) {
+      toast.error('Email is required and cannot be empty');
+      return;
+    }
+
+    if (!formData.password || !formData.password.trim()) {
+      toast.error('Password is required and cannot be empty');
+      return;
+    }
+    
     setIsLoading(true);
     
     try {

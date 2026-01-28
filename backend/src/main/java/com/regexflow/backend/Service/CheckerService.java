@@ -13,7 +13,9 @@ import com.regexflow.backend.Repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CheckerService {
@@ -63,11 +65,23 @@ public class CheckerService {
         template.setStatus(RegexTemplateStatus.VERIFIED);
         RegexTemplate savedTemplate = regexTemplateRepository.save(template);
 
-        // Create audit log for approval
-        AuditLog auditLog = new AuditLog();
-        auditLog.setTemplate(savedTemplate);
-        auditLog.setVerifiedBy(checker);
-        auditLog.setStatus(AuditStatus.APPROVED);
+        // Check if audit log already exists for this template
+        Optional<AuditLog> existingAuditLogOpt = auditLogRepository.findByTemplate(savedTemplate);
+        
+        AuditLog auditLog;
+        if (existingAuditLogOpt.isPresent()) {
+            // Update existing audit log
+            auditLog = existingAuditLogOpt.get();
+            auditLog.setStatus(AuditStatus.APPROVED);
+            auditLog.setVerifiedBy(checker);
+            auditLog.setVerifiedAt(LocalDateTime.now());
+        } else {
+            // Create new audit log for approval
+            auditLog = new AuditLog();
+            auditLog.setTemplate(savedTemplate);
+            auditLog.setVerifiedBy(checker);
+            auditLog.setStatus(AuditStatus.APPROVED);
+        }
         auditLogRepository.save(auditLog);
 
         return RegexTemplateMapper.toDto(savedTemplate);
@@ -96,11 +110,23 @@ public class CheckerService {
         template.setStatus(RegexTemplateStatus.DRAFT);
         RegexTemplate savedTemplate = regexTemplateRepository.save(template);
 
-        // Create audit log for rejection
-        AuditLog auditLog = new AuditLog();
-        auditLog.setTemplate(savedTemplate);
-        auditLog.setVerifiedBy(checker);
-        auditLog.setStatus(AuditStatus.REJECTED);
+        // Check if audit log already exists for this template
+        Optional<AuditLog> existingAuditLogOpt = auditLogRepository.findByTemplate(savedTemplate);
+        
+        AuditLog auditLog;
+        if (existingAuditLogOpt.isPresent()) {
+            // Update existing audit log
+            auditLog = existingAuditLogOpt.get();
+            auditLog.setStatus(AuditStatus.REJECTED);
+            auditLog.setVerifiedBy(checker);
+            auditLog.setVerifiedAt(LocalDateTime.now());
+        } else {
+            // Create new audit log for rejection
+            auditLog = new AuditLog();
+            auditLog.setTemplate(savedTemplate);
+            auditLog.setVerifiedBy(checker);
+            auditLog.setStatus(AuditStatus.REJECTED);
+        }
         auditLogRepository.save(auditLog);
 
         return RegexTemplateMapper.toDto(savedTemplate);
