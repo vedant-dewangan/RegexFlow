@@ -51,7 +51,7 @@ public class RegexController {
 
     @PostMapping("/save-as-draft")
     public ResponseEntity<?> saveAsDraft(
-            @Valid @RequestBody RegexTemplateDto dto,
+            @RequestBody RegexTemplateDto dto,
             HttpSession session) {
         if (!isMaker(session)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

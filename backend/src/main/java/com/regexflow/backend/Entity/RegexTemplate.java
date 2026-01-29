@@ -23,12 +23,10 @@ public class RegexTemplate {
     @Column(name="sender_header",nullable=false)
     private String senderHeader;
 
-    @Lob
-    @Column(nullable=false)
+    @Column(columnDefinition = "LONGTEXT",nullable=false)
     private String pattern;
 
-    @Lob
-    @Column(name = "sample_raw_msg")
+    @Column(columnDefinition = "LONGTEXT",nullable=false,name = "sample_raw_msg")
     private String sampleRawMsg;
 
     @Enumerated(EnumType.STRING)

@@ -65,6 +65,7 @@ function TemplateEditor() {
   const [verifying, setVerifying] = useState(false);
   const [verificationResult, setVerificationResult] = useState(null);
   const [currentTemplateId, setCurrentTemplateId] = useState(null);
+  const [templateStatus, setTemplateStatus] = useState(null);
 
   const getBankId = (bank) => bank.bId ?? bank.bid;
 
@@ -74,6 +75,9 @@ function TemplateEditor() {
       fetchTemplate();
     } else if (isEditMode && !user?.userId) {
       setFetching(false);
+    } else {
+      // Reset status for new templates
+      setTemplateStatus(null);
     }
   }, [templateId, user?.userId]);
 
@@ -100,6 +104,7 @@ function TemplateEditor() {
         return;
       }
       setCurrentTemplateId(template.templateId);
+      setTemplateStatus(template.status || null);
       const bankAddr = banks.length
         ? (banks.find((x) => String(getBankId(x)) === String(template.bankId))?.address || '')
         : '';
@@ -247,10 +252,13 @@ function TemplateEditor() {
       setLoading(true);
       const payload = buildDraftPayload();
       const response = await axios.post('/regex/save-as-draft', payload);
+      setTemplateStatus('DRAFT');
       toast.success('Draft saved successfully');
       setCurrentTemplateId(response.data.templateId);
       if (!isEditMode) navigate(`/maker/template/${response.data.templateId}`, { replace: true });
     } catch (error) {
+      console.log(error);
+      
       const msg = error.message || error.response?.data?.error || error.response?.data?.message || 'Failed to save draft';
       toast.error(msg);
     } finally {
@@ -311,6 +319,7 @@ function TemplateEditor() {
       
       // Now submit for approval
       await axios.put(`/regex/push/${id}`, payload);
+      setTemplateStatus('PENDING');
       toast.success('Submitted for approval');
       navigate('/maker/dashboard');
     } catch (error) {
@@ -539,7 +548,8 @@ function TemplateEditor() {
               type="button"
               className="btn-submit"
               onClick={handleSubmitForApproval}
-              disabled={loading || verifying}
+              disabled={loading || verifying || (templateStatus && templateStatus !== 'DRAFT')}
+              title={templateStatus && templateStatus !== 'DRAFT' ? `Cannot submit template with status: ${templateStatus}. Only DRAFT templates can be submitted for approval.` : ''}
             >
               Submit for Approval
             </button>

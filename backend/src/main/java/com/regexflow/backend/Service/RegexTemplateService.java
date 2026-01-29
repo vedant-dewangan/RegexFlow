@@ -102,6 +102,9 @@ public class RegexTemplateService {
         if (dto.getPattern() == null || dto.getPattern().isBlank()) {
             throw new RuntimeException("Pattern is required");
         }
+        if (dto.getSampleRawMsg() == null || dto.getSampleRawMsg().isBlank()) {
+            throw new RuntimeException("Sample Raw Message is required and cannot be empty");
+        }
         if (dto.getBankId() == null) {
             throw new RuntimeException("Bank ID is required");
         }
