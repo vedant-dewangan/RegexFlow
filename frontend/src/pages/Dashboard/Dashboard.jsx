@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
 import ExtractedFieldsCard from '../../components/ExtractedFieldsCard/ExtractedFieldsCard';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { groupTransactionsByMonth } from '../../utils/transactionUtils';
 import './Dashboard.css';
+
+const RECENT_COUNT = 5;
 
 function Dashboard() {
   const [smsText, setSmsText] = useState('');
@@ -22,6 +26,8 @@ function Dashboard() {
       setFetching(true);
       const response = await axios.get('/sms/history');
       const data = response.data;
+      console.log(data);
+      
       setTransactions(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching transactions:', error);
@@ -86,6 +92,12 @@ function Dashboard() {
     }
   };
 
+  const matchedTransactions = (Array.isArray(transactions) ? transactions : []).filter(
+    (t) => t?.hasMatch && t?.extractedFields
+  );
+  const recentTransactions = matchedTransactions.slice(0, RECENT_COUNT);
+  const monthlyData = groupTransactionsByMonth(transactions);
+
   return (
     <div className="dashboard-container">
       <Navbar />
@@ -129,29 +141,73 @@ function Dashboard() {
           )}
         </div>
 
-        <div className="dashboard-card">
-          <h2>Transactions</h2>
+        {/* Recent Transactions */}
+        <div className="dashboard-card dashboard-card-recent">
+          <div className="section-header">
+            <h2>Recent Transactions</h2>
+            {matchedTransactions.length > RECENT_COUNT && (
+              <Link to="/dashboard/transactions" className="btn-view-all">
+                View All
+              </Link>
+            )}
+          </div>
           {fetching ? (
             <div className="loading-state">Loading transactions...</div>
-          ) : !Array.isArray(transactions) || transactions.length === 0 ? (
+          ) : recentTransactions.length === 0 ? (
             <div className="empty-state">
               <p>No transactions found.</p>
               <p className="empty-state-hint">Add your first SMS transaction using the form above</p>
             </div>
           ) : (
-            <div className="transactions-list">
-              {Array.isArray(transactions) && transactions.map((transaction) => {
-                // Show only transactions with extracted fields (matched templates)
-                if (!transaction.hasMatch || !transaction.extractedFields) {
-                  return null;
-                }
-                
-                return (
-                  <div key={transaction.smsId || Date.now()}>
+            <>
+              <div className="transactions-list recent-list">
+                {recentTransactions.map((transaction) => (
+                  <div key={transaction.smsId || transaction.createdAt}>
                     <ExtractedFieldsCard extractedFields={transaction.extractedFields} />
                   </div>
-                );
-              })}
+                ))}
+              </div>
+              {matchedTransactions.length > RECENT_COUNT && (
+                <Link to="/dashboard/transactions" className="btn-view-all-mobile">
+                  View All ({matchedTransactions.length} transactions)
+                </Link>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Monthly Expense Tracker */}
+        <div className="dashboard-card monthly-tracker-card">
+          <div className="monthly-tracker-title-row">
+            <Link to="/dashboard/monthly-expense" className="monthly-tracker-link">
+              <h2>Monthly Expense Tracker</h2>
+            </Link>
+          </div>
+          {fetching ? (
+            <div className="loading-state">Loading...</div>
+          ) : monthlyData.length === 0 ? (
+            <div className="empty-state">
+              <p>No monthly data yet.</p>
+              <p className="empty-state-hint">Add SMS transactions to see credited vs debited by month</p>
+            </div>
+          ) : (
+            <div className="monthly-tracker-list">
+              {monthlyData.map((month) => (
+                <Link
+                  key={month.monthKey}
+                  to={`/dashboard/monthly-expense?month=${month.monthKey}`}
+                  className="month-block month-block-link"
+                >
+                  <div className="month-header">
+                    <span className="month-label">{month.label}</span>
+                    <span className="month-totals">
+                      <span className="credited">+₹{month.totalCredited.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                      <span className="debited">−₹{month.totalDebited.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                    </span>
+                    <span className="month-chevron">→</span>
+                  </div>
+                </Link>
+              ))}
             </div>
           )}
         </div>

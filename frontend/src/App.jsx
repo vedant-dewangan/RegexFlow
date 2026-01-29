@@ -4,6 +4,8 @@ import Landing from './pages/Landing/Landing';
 import Login from './pages/Login/Login';
 import Register from './pages/Register/Register';
 import Dashboard from './pages/Dashboard/Dashboard';
+import AllTransactions from './pages/AllTransactions/AllTransactions';
+import MonthlyExpense from './pages/MonthlyExpense/MonthlyExpense';
 import MakerDashboard from './pages/MakerDashboard/MakerDashboard';
 import CheckerDashboard from './pages/CheckerDashboard/CheckerDashboard';
 import AdminDashboard from './pages/AdminDashboard/AdminDashboard';
@@ -51,6 +53,22 @@ function App() {
               <Dashboard />
             </RoleBasedRoute>
           } 
+        />
+        <Route 
+          path="/dashboard/transactions" 
+          element={
+            <RoleBasedRoute allowedRoles="CUSTOMER">
+              <AllTransactions />
+            </RoleBasedRoute>
+          }
+        />
+        <Route 
+          path="/dashboard/monthly-expense" 
+          element={
+            <RoleBasedRoute allowedRoles="CUSTOMER">
+              <MonthlyExpense />
+            </RoleBasedRoute>
+          }
         />
         
         {/* MAKER can only access /maker/dashboard and /maker/template/* */}
