@@ -75,9 +75,6 @@ function ExtractedFieldsCard({ extractedFields }) {
   const isLoan = transactionTypeResult === 'LOAN';
   const isService = transactionTypeResult === 'SERVICE';
 
-  // Get payment mode (UPI, Card, etc.)
-  const paymentMode = fields.paymentType || fields.txnNote || 'N/A';
-
   // Get card class based on transaction type
   const getCardClass = () => {
     if (isDebit) return 'debit-card';
@@ -107,6 +104,96 @@ function ExtractedFieldsCard({ extractedFields }) {
 
   const typeInfo = getTypeInfo();
 
+  // Format field name from camelCase to Title Case
+  const formatFieldName = (fieldName) => {
+    // Handle special cases
+    const specialCases = {
+      'bankAcId': 'Bank A/C ID',
+      'sBank': 'Sender Bank',
+      'rBank': 'Receiver Bank',
+      'sAcType': 'Sender A/C Type',
+      'sAcId': 'Sender A/C ID',
+      'txnNote': 'Transaction Note',
+      'paymentType': 'Payment Mode',
+      'availLimit': 'Available Limit',
+      'creditLimit': 'Credit Limit',
+      'billerAcId': 'Biller A/C ID',
+      'billId': 'Bill ID',
+      'billDate': 'Bill Date',
+      'billPeriod': 'Bill Period',
+      'dueDate': 'Due Date',
+      'minAmtDue': 'Min Amount Due',
+      'totAmtDue': 'Total Amount Due',
+      'principalAmount': 'Principal Amount',
+      'maturityDate': 'Maturity Date',
+      'maturityAmount': 'Maturity Amount',
+      'rateOfInterest': 'Rate of Interest',
+      'mfNav': 'MF NAV',
+      'mfUnits': 'MF Units',
+      'mfArn': 'MF ARN',
+      'mfBalUnits': 'MF Balance Units',
+      'mfSchemeBal': 'MF Scheme Balance',
+      'amountPaid': 'Amount Paid',
+      'offerAmount': 'Offer Amount',
+      'minPurchaseAmt': 'Min Purchase Amount',
+      'amountNegative': 'Amount Negative',
+      'balanceNegative': 'Balance Negative',
+      'smsText': 'SMS Text'
+    };
+
+    if (specialCases[fieldName]) {
+      return specialCases[fieldName];
+    }
+
+    // Convert camelCase to Title Case
+    return fieldName
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/^./, str => str.toUpperCase())
+      .trim();
+  };
+
+  // Get all extracted fields to display
+  const getFieldsToDisplay = () => {
+    const fieldsToDisplay = [];
+    const alreadyShown = new Set(['amount', 'date', 'merchant', 'balance']); // These are shown separately
+    
+    // Add all fields from the fields object
+    Object.keys(fields).forEach(key => {
+      const value = fields[key];
+      // Only include fields that have values and aren't already shown
+      if (value && value.trim() !== '' && !alreadyShown.has(key)) {
+        fieldsToDisplay.push({
+          key,
+          label: formatFieldName(key),
+          value: value
+        });
+      }
+    });
+
+    // Sort fields for consistent display (common fields first)
+    const fieldOrder = [
+      'paymentType', 'txnNote', 'bankAcId', 'senderName', 'receiverName',
+      'sBank', 'rBank', 'sAcType', 'sAcId', 'city', 'availLimit', 'creditLimit',
+      'billerAcId', 'billId', 'billDate', 'billPeriod', 'dueDate', 'minAmtDue', 'totAmtDue',
+      'principalAmount', 'frequency', 'maturityDate', 'maturityAmount', 'rateOfInterest',
+      'mfNav', 'mfUnits', 'mfArn', 'mfBalUnits', 'mfSchemeBal',
+      'amountPaid', 'offerAmount', 'minPurchaseAmt'
+    ];
+
+    fieldsToDisplay.sort((a, b) => {
+      const indexA = fieldOrder.indexOf(a.key);
+      const indexB = fieldOrder.indexOf(b.key);
+      if (indexA === -1 && indexB === -1) return a.label.localeCompare(b.label);
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+      return indexA - indexB;
+    });
+
+    return fieldsToDisplay;
+  };
+
+  const fieldsToDisplay = getFieldsToDisplay();
+
   return (
     <div className={`transaction-summary-card ${getCardClass()}`}>
       <div className="transaction-type-indicator">
@@ -133,11 +220,6 @@ function ExtractedFieldsCard({ extractedFields }) {
             <span className="detail-value">{merchant}</span>
           </div>
         )}
-        
-        <div className="detail-row">
-          <span className="detail-label">Mode:</span>
-          <span className="detail-value">{paymentMode}</span>
-        </div>
 
         {balance && (
           <div className="detail-row">
@@ -145,6 +227,14 @@ function ExtractedFieldsCard({ extractedFields }) {
             <span className="detail-value">₹{balance}</span>
           </div>
         )}
+
+        {/* Display all other extracted fields */}
+        {fieldsToDisplay.map((field) => (
+          <div key={field.key} className="detail-row">
+            <span className="detail-label">{field.label}:</span>
+            <span className="detail-value">{field.value}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
