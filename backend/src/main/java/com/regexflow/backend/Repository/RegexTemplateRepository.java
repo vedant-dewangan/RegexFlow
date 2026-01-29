@@ -26,4 +26,6 @@ public interface RegexTemplateRepository extends JpaRepository<RegexTemplate,Lon
         PaymentType paymentType,
         RegexTemplateStatus status
     );
+    
+    List<RegexTemplate> findBySenderHeaderAndStatus(String senderHeader, RegexTemplateStatus status);
 }

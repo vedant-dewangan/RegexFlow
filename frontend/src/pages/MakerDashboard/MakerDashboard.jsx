@@ -9,15 +9,19 @@ import './MakerDashboard.css';
 
 function MakerDashboard() {
   const [templates, setTemplates] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [notificationsLoading, setNotificationsLoading] = useState(true);
   const navigate = useNavigate();
   const { user } = useAuth();
 
   useEffect(() => {
     if (user?.userId) {
       fetchTemplates();
+      fetchNotifications();
     } else {
       setLoading(false);
+      setNotificationsLoading(false);
     }
   }, [user?.userId]);
 
@@ -42,6 +46,47 @@ function MakerDashboard() {
 
   const handleEditTemplate = (templateId) => {
     navigate(`/maker/template/${templateId}`);
+  };
+
+  const fetchNotifications = async () => {
+    try {
+      setNotificationsLoading(true);
+      const response = await axios.get('/sms/notifications/pending');
+      setNotifications(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      if (error.response?.status !== 401) {
+        toast.error('Failed to load notifications');
+      }
+      setNotifications([]);
+    } finally {
+      setNotificationsLoading(false);
+    }
+  };
+
+  const handleCreateTemplateFromNotification = (notification) => {
+    // Navigate to template editor with pre-filled data
+    // We'll pass the notification data via state
+    navigate('/maker/template/new', {
+      state: {
+        prefillData: {
+          senderHeader: notification.senderHeader,
+          sampleRawMsg: notification.smsText,
+        },
+        notificationId: notification.notificationId,
+      },
+    });
+  };
+
+  const handleResolveNotification = async (notificationId) => {
+    try {
+      await axios.put(`/sms/notifications/${notificationId}/resolve`);
+      toast.success('Notification marked as resolved');
+      fetchNotifications();
+    } catch (error) {
+      console.error('Error resolving notification:', error);
+      toast.error('Failed to resolve notification');
+    }
   };
 
   const getStatusColor = (status) => {
@@ -78,6 +123,62 @@ function MakerDashboard() {
         </div>
 
         <div className="maker-dashboard-content">
+          {/* Template Request Notifications Section */}
+          <div className="notifications-section">
+            <h2>Template Request Notifications</h2>
+            {notificationsLoading ? (
+              <div className="loading-state">Loading notifications...</div>
+            ) : notifications.length === 0 ? (
+              <div className="empty-state">
+                <p>No pending notifications.</p>
+                <p className="empty-state-hint">You'll see requests here when customers submit SMS without matching templates</p>
+              </div>
+            ) : (
+              <div className="notifications-list">
+                {notifications.map((notification) => (
+                  <div key={notification.notificationId} className="notification-card">
+                    <div className="notification-header">
+                      <div className="notification-title">
+                        <h3>Sender: {notification.senderHeader}</h3>
+                        <span className="notification-badge">Pending</span>
+                      </div>
+                      <div className="notification-actions">
+                        <button
+                          className="btn-create-from-notification"
+                          onClick={() => handleCreateTemplateFromNotification(notification)}
+                        >
+                          Create Template
+                        </button>
+                        <button
+                          className="btn-resolve-notification"
+                          onClick={() => handleResolveNotification(notification.notificationId)}
+                        >
+                          Mark Resolved
+                        </button>
+                      </div>
+                    </div>
+                    <div className="notification-details">
+                      <div className="notification-detail-item">
+                        <span className="detail-label">SMS Text:</span>
+                        <span className="detail-value">{notification.smsText}</span>
+                      </div>
+                      <div className="notification-detail-item">
+                        <span className="detail-label">Requested by:</span>
+                        <span className="detail-value">{notification.requestedByName}</span>
+                      </div>
+                      <div className="notification-detail-item">
+                        <span className="detail-label">Requested on:</span>
+                        <span className="detail-value">
+                          {new Date(notification.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div className="templates-section">
             <h2>My Templates</h2>
             {loading ? (

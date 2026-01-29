@@ -1,0 +1,175 @@
+.transaction-summary-card {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 12px;
+  border-left: 3px solid #dee2e6;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+}
+
+.transaction-summary-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.transaction-summary-card.debit-card {
+  background: #f0fdf4;
+  border-left: 3px solid #22c55e;
+  border-color: #bbf7d0;
+}
+
+.transaction-summary-card.credit-card {
+  background: #fff5f5;
+  border-left: 3px solid #dc3545;
+  border-color: #fecaca;
+}
+
+.transaction-type-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.transaction-summary-card.debit-card .transaction-type-indicator {
+  color: #22c55e;
+}
+
+.transaction-summary-card.credit-card .transaction-type-indicator {
+  color: #dc3545;
+}
+
+.transaction-summary-card.default-card .transaction-type-indicator {
+  color: #6c757d;
+}
+
+.type-icon {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.type-text {
+  font-size: 11px;
+}
+
+.transaction-amount {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.transaction-summary-card.debit-card .transaction-amount {
+  border-bottom-color: rgba(34, 197, 94, 0.15);
+}
+
+.transaction-summary-card.credit-card .transaction-amount {
+  border-bottom-color: rgba(220, 53, 69, 0.15);
+}
+
+.amount-symbol {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.transaction-summary-card.debit-card .amount-symbol {
+  color: #22c55e;
+}
+
+.transaction-summary-card.credit-card .amount-symbol {
+  color: #dc3545;
+}
+
+.amount-value {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.transaction-summary-card.debit-card .amount-value {
+  color: #22c55e;
+}
+
+.transaction-summary-card.credit-card .amount-value {
+  color: #dc3545;
+}
+
+.transaction-summary-card.default-card .amount-value {
+  color: #333;
+}
+
+.transaction-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+}
+
+.detail-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: #212529;
+  text-align: right;
+  flex: 1;
+  margin-left: 12px;
+}
+
+.transaction-summary-card.debit-card .detail-value {
+  color: #212529;
+}
+
+.transaction-summary-card.credit-card .detail-value {
+  color: #212529;
+}
+
+@media (max-width: 768px) {
+  .transaction-summary-card {
+    padding: 14px;
+  }
+
+  .amount-value {
+    font-size: 20px;
+  }
+
+  .amount-symbol {
+    font-size: 16px;
+  }
+
+  .detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+
+  .detail-value {
+    text-align: left;
+    margin-left: 0;
+  }
+}

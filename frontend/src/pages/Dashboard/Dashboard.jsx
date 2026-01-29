@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
+import ExtractedFieldsCard from '../../components/ExtractedFieldsCard/ExtractedFieldsCard';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import './Dashboard.css';
@@ -10,6 +11,7 @@ function Dashboard() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
+  const [lastSubmission, setLastSubmission] = useState(null);
 
   useEffect(() => {
     fetchTransactions();
@@ -18,72 +20,14 @@ function Dashboard() {
   const fetchTransactions = async () => {
     try {
       setFetching(true);
-      try {
-        const response = await axios.get('/api/transactions');
-        // Ensure we always set an array
-        const data = response.data;
-        setTransactions(Array.isArray(data) ? data : []);
-      } catch (apiError) {
-        // If API call fails, use dummy data for demonstration
-        // Remove this fallback once backend is ready
-        console.warn('API call failed, using dummy data:', apiError);
-        const dummyTransactions = [
-          {
-            id: 1,
-            smsText: 'AXISBK: Rs.500.00 debited from A/c XX1234 on 26-Jan-25. Avl Bal: Rs.15,234.56',
-            createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: 2,
-            smsText: 'HDFCBK: INR 1,200.00 credited to A/c XX5678 on 26-Jan-25. Ref: UPI123456789',
-            createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: 3,
-            smsText: 'ICICIB: Card 4567 debited Rs.2,500.00 at AMAZON on 25-Jan-25. Avl Bal: Rs.8,900.00',
-            createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: 4,
-            smsText: 'SBIN: Rs.350.00 paid via UPI Ref: 9876543210 on 25-Jan-25. Avl Bal: Rs.12,450.00',
-            createdAt: new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: 5,
-            smsText: 'AXISBK: INR 3,000.00 received from UPI ID merchant@paytm on 24-Jan-25. Avl Bal: Rs.18,234.56',
-            createdAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: 6,
-            smsText: 'HDFCBK: Net banking payment of Rs.1,500.00 to ELECTRICITY BILL on 24-Jan-25. Ref: NB987654',
-            createdAt: new Date(Date.now() - 50 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: 7,
-            smsText: 'ICICIB: Your A/c 7890 credited Rs.5,000.00 on 23-Jan-25. Avl Bal: Rs.11,400.00',
-            createdAt: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: 8,
-            smsText: 'SBIN: Card 1234 used for Rs.899.00 at FLIPKART on 23-Jan-25. Avl Bal: Rs.12,800.00',
-            createdAt: new Date(Date.now() - 74 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: 9,
-            smsText: 'AXISBK: Rs.250.00 debited from A/c XX1234 on 22-Jan-25. Avl Bal: Rs.15,734.56',
-            createdAt: new Date(Date.now() - 96 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: 10,
-            smsText: 'HDFCBK: INR 750.00 credited to A/c XX5678 on 22-Jan-25. Ref: UPI987654321',
-            createdAt: new Date(Date.now() - 98 * 60 * 60 * 1000).toISOString(),
-          },
-        ];
-        setTransactions(dummyTransactions);
-      }
+      const response = await axios.get('/sms/history');
+      const data = response.data;
+      setTransactions(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching transactions:', error);
-      toast.error('Failed to load transactions');
+      if (error.response?.status !== 401) {
+        toast.error('Failed to load transactions');
+      }
       setTransactions([]);
     } finally {
       setFetching(false);
@@ -101,44 +45,35 @@ function Dashboard() {
     try {
       setLoading(true);
       
-      // Create transaction object
-      const newTransaction = {
-        smsText: smsTextToAdd,
-        createdAt: new Date().toISOString(),
-      };
-
-      // Make API call to save to database
-      try {
-        const response = await axios.post('/api/transactions', newTransaction);
-        const savedTransaction = response.data;
-        
-        // Update the array with the response from database
-        setTransactions((prev) => {
-          const prevArray = Array.isArray(prev) ? prev : [];
-          return [savedTransaction, ...prevArray];
-        });
-        
-        toast.success('Transaction added successfully');
-      } catch (apiError) {
-        // If API call fails, still add to local state for now
-        // Remove this fallback once backend is ready
-        console.warn('API call failed, using local storage:', apiError);
-        const savedTransaction = {
-          ...newTransaction,
-          id: Date.now(),
-        };
-        setTransactions((prev) => {
-          const prevArray = Array.isArray(prev) ? prev : [];
-          return [savedTransaction, ...prevArray];
-        });
-        toast.success('Transaction added (saved locally)');
+      // Make API call to submit SMS
+      const response = await axios.post('/sms/submit', {
+        smsText: smsTextToAdd
+      });
+      
+      const submissionResponse = response.data;
+      
+      // Store the last submission for displaying extracted fields or no-template message
+      setLastSubmission(submissionResponse);
+      
+      // Refresh transactions list
+      await fetchTransactions();
+      
+      // Show appropriate message
+      if (submissionResponse.hasMatch) {
+        toast.success('SMS processed successfully! Template matched.');
+      } else {
+        toast.info(submissionResponse.message || 'No template matched. Maker has been notified.');
       }
       
       // Clear input
       setSmsText('');
     } catch (error) {
-      console.error('Error adding transaction:', error);
-      toast.error('Failed to add transaction');
+      console.error('Error submitting SMS:', error);
+      if (error.response?.status === 401) {
+        toast.error('Please log in again');
+      } else {
+        toast.error(error.response?.data?.error || 'Failed to submit SMS');
+      }
     } finally {
       setLoading(false);
     }
@@ -175,9 +110,23 @@ function Dashboard() {
               onClick={handleAddTransaction}
               disabled={loading || !smsText.trim()}
             >
-              {loading ? 'Adding...' : 'Add'}
+              {loading ? 'Processing...' : 'Submit'}
             </button>
           </div>
+          
+          {/* Display extracted fields if match found */}
+          {lastSubmission && lastSubmission.hasMatch && lastSubmission.extractedFields && (
+            <ExtractedFieldsCard extractedFields={lastSubmission.extractedFields} />
+          )}
+          
+          {/* Display no-template message if no match */}
+          {lastSubmission && !lastSubmission.hasMatch && (
+            <div className="no-template-message">
+              <div className="no-template-icon">⚠️</div>
+              <p className="no-template-text">{lastSubmission.message || 'No available template'}</p>
+              <p className="no-template-hint">The maker has been notified to create a template for this sender.</p>
+            </div>
+          )}
         </div>
 
         <div className="dashboard-card">
@@ -191,16 +140,18 @@ function Dashboard() {
             </div>
           ) : (
             <div className="transactions-list">
-              {Array.isArray(transactions) && transactions.map((transaction) => (
-                <div key={transaction.id || transaction.transactionId || Date.now()} className="transaction-card">
-                  <div className="transaction-content">
-                    <p className="transaction-sms">{transaction.smsText}</p>
-                    <span className="transaction-date">
-                      {transaction.createdAt ? new Date(transaction.createdAt).toLocaleString() : 'N/A'}
-                    </span>
+              {Array.isArray(transactions) && transactions.map((transaction) => {
+                // Show only transactions with extracted fields (matched templates)
+                if (!transaction.hasMatch || !transaction.extractedFields) {
+                  return null;
+                }
+                
+                return (
+                  <div key={transaction.smsId || Date.now()}>
+                    <ExtractedFieldsCard extractedFields={transaction.extractedFields} />
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
