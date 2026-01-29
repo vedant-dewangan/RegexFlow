@@ -10,12 +10,12 @@ function ExtractedFieldsCard({ extractedFields }) {
   // Determine transaction type from fields - prioritize smsType from template
   const determineTransactionType = () => {
     // First priority: Use smsType from template (most reliable)
-    if (smsType === 'DEBIT' || smsType === 'CREDIT') {
+    if (smsType === 'DEBIT' || smsType === 'CREDIT' || smsType === 'LOAN' || smsType === 'SERVICE') {
       return smsType;
     }
     
     // Second priority: Use transactionType if explicitly set
-    if (transactionType === 'DEBIT' || transactionType === 'CREDIT') {
+    if (transactionType === 'DEBIT' || transactionType === 'CREDIT' || transactionType === 'LOAN' || transactionType === 'SERVICE') {
       return transactionType;
     }
     
@@ -27,6 +27,26 @@ function ExtractedFieldsCard({ extractedFields }) {
     // Fourth priority: Check SMS text patterns in fields or look for keywords
     const smsText = fields.smsText || '';
     const lowerText = smsText.toLowerCase();
+    
+    // Common loan keywords
+    if (lowerText.includes('loan') || 
+        lowerText.includes('emi') ||
+        lowerText.includes('installment') ||
+        lowerText.includes('repayment') ||
+        lowerText.includes('disbursed') ||
+        lowerText.includes('sanctioned')) {
+      return 'LOAN';
+    }
+    
+    // Common service keywords
+    if (lowerText.includes('service') || 
+        lowerText.includes('bill') ||
+        lowerText.includes('recharge') ||
+        lowerText.includes('subscription') ||
+        lowerText.includes('payment due') ||
+        lowerText.includes('invoice')) {
+      return 'SERVICE';
+    }
     
     // Common debit keywords
     if (lowerText.includes('debited') || 
@@ -52,19 +72,50 @@ function ExtractedFieldsCard({ extractedFields }) {
   const transactionTypeResult = determineTransactionType();
   const isDebit = transactionTypeResult === 'DEBIT';
   const isCredit = transactionTypeResult === 'CREDIT';
+  const isLoan = transactionTypeResult === 'LOAN';
+  const isService = transactionTypeResult === 'SERVICE';
 
   // Get payment mode (UPI, Card, etc.)
   const paymentMode = fields.paymentType || fields.txnNote || 'N/A';
 
+  // Get card class based on transaction type
+  const getCardClass = () => {
+    if (isDebit) return 'debit-card';
+    if (isCredit) return 'credit-card';
+    if (isLoan) return 'loan-card';
+    if (isService) return 'service-card';
+    return 'default-card';
+  };
+
+  // Get type icon and text
+  const getTypeInfo = () => {
+    if (isDebit) return { icon: '↓', text: 'Debited' };
+    if (isCredit) return { icon: '↑', text: 'Credited' };
+    if (isLoan) return { icon: '💰', text: 'Loan' };
+    if (isService) return { icon: '🔧', text: 'Service' };
+    return { icon: '•', text: 'Transaction' };
+  };
+
+  // Get amount symbol
+  const getAmountSymbol = () => {
+    if (isDebit) return '-';
+    if (isCredit) return '+';
+    if (isLoan) return '-'; // Loan repayments are typically debits
+    if (isService) return '-'; // Service payments are typically debits
+    return '';
+  };
+
+  const typeInfo = getTypeInfo();
+
   return (
-    <div className={`transaction-summary-card ${!isDebit ? 'debit-card' : !isCredit ? 'credit-card' : 'default-card'}`}>
+    <div className={`transaction-summary-card ${getCardClass()}`}>
       <div className="transaction-type-indicator">
-        <span className="type-icon">{isDebit ? '↓' : isCredit ? '↑' : '•'}</span>
-        <span className="type-text">{isDebit ? 'Debited' : isCredit ? 'Credited' : 'Transaction'}</span>
+        <span className="type-icon">{typeInfo.icon}</span>
+        <span className="type-text">{typeInfo.text}</span>
       </div>
       
       <div className="transaction-amount">
-        <span className="amount-symbol">{isDebit ? '-' : isCredit ? '+' : ''}</span>
+        <span className="amount-symbol">{getAmountSymbol()}</span>
         <span className="amount-value">₹{amount || '0.00'}</span>
       </div>
 

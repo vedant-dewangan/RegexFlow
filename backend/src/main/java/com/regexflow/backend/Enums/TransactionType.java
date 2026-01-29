@@ -11,8 +11,8 @@ public enum TransactionType {
     CASH_DEPOSIT,
 
     // Bills & Utilities
-    ELECTRICITY_BILL,
-    MOBILE_RECHARGE,
+    BILL,
+    SALARY,
 
     // Loans & EMI
     EMI_DEBIT,

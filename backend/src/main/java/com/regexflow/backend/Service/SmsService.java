@@ -308,12 +308,12 @@ public class SmsService {
                 }
             }
             
-            // Determine transaction type (DEBIT/CREDIT) - prioritize template's smsType
+            // Determine transaction type (DEBIT/CREDIT/LOAN/SERVICE) - prioritize template's smsType
             String transactionType = null;
             
             // First, use the template's smsType if available (most reliable)
             if (templateSmsType != null) {
-                transactionType = templateSmsType.name(); // DEBIT or CREDIT
+                transactionType = templateSmsType.name(); // DEBIT, CREDIT, LOAN, or SERVICE
             }
             // Fallback: Check for amountNegative field (indicates debit)
             else if (fieldsMap.containsKey("amountNegative") && fieldsMap.get("amountNegative") != null) {
@@ -323,8 +323,26 @@ public class SmsService {
             else if (smsText != null && !smsText.isEmpty()) {
                 String smsTextLower = smsText.toLowerCase();
                 
+                // Common loan keywords
+                if (smsTextLower.contains("loan") || 
+                    smsTextLower.contains("emi") ||
+                    smsTextLower.contains("installment") ||
+                    smsTextLower.contains("repayment") ||
+                    smsTextLower.contains("disbursed") ||
+                    smsTextLower.contains("sanctioned")) {
+                    transactionType = "LOAN";
+                }
+                // Common service keywords
+                else if (smsTextLower.contains("service") || 
+                         smsTextLower.contains("bill") ||
+                         smsTextLower.contains("recharge") ||
+                         smsTextLower.contains("subscription") ||
+                         smsTextLower.contains("payment due") ||
+                         smsTextLower.contains("invoice")) {
+                    transactionType = "SERVICE";
+                }
                 // Common debit keywords
-                if (smsTextLower.contains("debited") || 
+                else if (smsTextLower.contains("debited") || 
                     smsTextLower.contains("withdrawn") || 
                     smsTextLower.contains("spent") ||
                     smsTextLower.contains("paid") ||

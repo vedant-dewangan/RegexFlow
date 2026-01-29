@@ -18,6 +18,6 @@ public class ExtractedFieldsDto {
     private String date;
     private String merchant;
     private String balance;
-    private String transactionType; // DEBIT or CREDIT
-    private String smsType; // DEBIT or CREDIT from template
+    private String transactionType; // DEBIT, CREDIT, LOAN, or SERVICE
+    private String smsType; // DEBIT, CREDIT, LOAN, or SERVICE from template
 }

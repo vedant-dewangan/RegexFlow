@@ -26,6 +26,18 @@
   border-color: #fecaca;
 }
 
+.transaction-summary-card.loan-card {
+  background: #fef3c7;
+  border-left: 3px solid #f59e0b;
+  border-color: #fde68a;
+}
+
+.transaction-summary-card.service-card {
+  background: #e0e7ff;
+  border-left: 3px solid #6366f1;
+  border-color: #c7d2fe;
+}
+
 .transaction-type-indicator {
   display: flex;
   align-items: center;
@@ -43,6 +55,14 @@
 
 .transaction-summary-card.credit-card .transaction-type-indicator {
   color: #dc3545;
+}
+
+.transaction-summary-card.loan-card .transaction-type-indicator {
+  color: #f59e0b;
+}
+
+.transaction-summary-card.service-card .transaction-type-indicator {
+  color: #6366f1;
 }
 
 .transaction-summary-card.default-card .transaction-type-indicator {
@@ -75,6 +95,14 @@
   border-bottom-color: rgba(220, 53, 69, 0.15);
 }
 
+.transaction-summary-card.loan-card .transaction-amount {
+  border-bottom-color: rgba(245, 158, 11, 0.15);
+}
+
+.transaction-summary-card.service-card .transaction-amount {
+  border-bottom-color: rgba(99, 102, 241, 0.15);
+}
+
 .amount-symbol {
   font-size: 18px;
   font-weight: 700;
@@ -86,6 +114,14 @@
 
 .transaction-summary-card.credit-card .amount-symbol {
   color: #dc3545;
+}
+
+.transaction-summary-card.loan-card .amount-symbol {
+  color: #f59e0b;
+}
+
+.transaction-summary-card.service-card .amount-symbol {
+  color: #6366f1;
 }
 
 .amount-value {
@@ -100,6 +136,14 @@
 
 .transaction-summary-card.credit-card .amount-value {
   color: #dc3545;
+}
+
+.transaction-summary-card.loan-card .amount-value {
+  color: #f59e0b;
+}
+
+.transaction-summary-card.service-card .amount-value {
+  color: #6366f1;
 }
 
 .transaction-summary-card.default-card .amount-value {

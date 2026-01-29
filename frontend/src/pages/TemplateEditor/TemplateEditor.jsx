@@ -10,7 +10,7 @@ import './TemplateEditor.css';
 const PAYMENT_TYPES = ['UPI', 'NET_BANKING', 'CREDIT_CARD', 'DEBIT_CARD', 'CASH', 'CHEQUE'];
 const TRANSACTION_TYPES = [
   'UPI_CREDIT', 'UPI_DEBIT', 'ATM_WITHDRAWAL', 'CASH_DEPOSIT',
-  'ELECTRICITY_BILL', 'MOBILE_RECHARGE', 'EMI_DEBIT', 'LOAN_CREDIT',
+  'BILL', 'SALARY', 'EMI_DEBIT', 'LOAN_CREDIT',
   'CREDIT_CARD_PAYMENT', 'DEBIT_CARD_SPEND', 'MUTUAL_FUND_PURCHASE', 'FIXED_DEPOSIT_MATURITY',
 ];
 
@@ -425,6 +425,8 @@ function TemplateEditor() {
                 >
                   <option value="DEBIT">DEBIT</option>
                   <option value="CREDIT">CREDIT</option>
+                  <option value="LOAN">LOAN</option>
+                  <option value="SERVICE">SERVICE</option>
                 </select>
               </div>
 

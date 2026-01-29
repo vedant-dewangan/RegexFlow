@@ -245,6 +245,22 @@
   background: #28a745;
 }
 
+.transaction-card.loan-card {
+  border-left-color: #f59e0b;
+}
+
+.transaction-card.loan-card::before {
+  background: #f59e0b;
+}
+
+.transaction-card.service-card {
+  border-left-color: #6366f1;
+}
+
+.transaction-card.service-card::before {
+  background: #6366f1;
+}
+
 .transaction-content {
   display: flex;
   flex-direction: column;
