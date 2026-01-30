@@ -1,0 +1,368 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > RegexProcessService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.regexflow.backend.Service</a>
+</div>
+
+<h1>Coverage Summary for Class: RegexProcessService (com.regexflow.backend.Service)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">RegexProcessService</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75.5%
+  </span>
+  <span class="absValue">
+    (77/102)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    83.6%
+  </span>
+  <span class="absValue">
+    (97/116)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.regexflow.backend.Service;
+&nbsp;
+&nbsp;import com.regexflow.backend.Dto.FieldResult;
+&nbsp;import com.regexflow.backend.Dto.RegexProcessRequest;
+&nbsp;import com.regexflow.backend.Dto.RegexProcessResponse;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.regex.Matcher;
+&nbsp;import java.util.regex.Pattern;
+&nbsp;
+&nbsp;@Service
+<b class="fc">&nbsp;public class RegexProcessService {</b>
+&nbsp;
+&nbsp;    public RegexProcessResponse processRegex(RegexProcessRequest request) {
+&nbsp;
+<b class="fc">&nbsp;        RegexProcessResponse response = new RegexProcessResponse();</b>
+&nbsp;
+&nbsp;        try {
+<b class="fc">&nbsp;            Pattern pattern = Pattern.compile(request.getRegexPattern(), Pattern.CASE_INSENSITIVE);</b>
+<b class="fc">&nbsp;            Matcher matcher = pattern.matcher(request.getRawMsg());</b>
+&nbsp;
+<b class="fc">&nbsp;            if (!matcher.find()) {</b>
+<b class="fc">&nbsp;                return response; // all fields will have index -1 and value null</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            // Map to store group number for each named group
+<b class="fc">&nbsp;            Map&lt;String, Integer&gt; groupNumberMap = findGroupNumbers(request.getRegexPattern());</b>
+&nbsp;            
+&nbsp;            // Extract all named groups from the matcher
+<b class="fc">&nbsp;            Map&lt;String, FieldResult&gt; extractedFields = new HashMap&lt;&gt;();</b>
+&nbsp;            
+&nbsp;            // All possible field names to extract
+<b class="fc">&nbsp;            String[] fieldNames = {</b>
+&nbsp;                // Basic Transaction Fields
+&nbsp;                &quot;bankAcId&quot;, &quot;amount&quot;, &quot;amountNegative&quot;, &quot;date&quot;, &quot;merchant&quot;, &quot;txnNote&quot;, &quot;balance&quot;, &quot;balanceNegative&quot;,
+&nbsp;                // Sender/Receiver Details
+&nbsp;                &quot;senderName&quot;, &quot;sBank&quot;, &quot;sAcType&quot;, &quot;sAcId&quot;, &quot;receiverName&quot;, &quot;rBank&quot;,
+&nbsp;                // General Information
+&nbsp;                &quot;availLimit&quot;, &quot;creditLimit&quot;, &quot;paymentType&quot;, &quot;city&quot;,
+&nbsp;                // Biller Details
+&nbsp;                &quot;billerAcId&quot;, &quot;billId&quot;, &quot;billDate&quot;, &quot;billPeriod&quot;, &quot;dueDate&quot;, &quot;minAmtDue&quot;, &quot;totAmtDue&quot;,
+&nbsp;                // FD Details
+&nbsp;                &quot;principalAmount&quot;, &quot;frequency&quot;, &quot;maturityDate&quot;, &quot;maturityAmount&quot;, &quot;rateOfInterest&quot;,
+&nbsp;                // MF Details
+&nbsp;                &quot;mfNav&quot;, &quot;mfUnits&quot;, &quot;mfArn&quot;, &quot;mfBalUnits&quot;, &quot;mfSchemeBal&quot;,
+&nbsp;                // Order Details
+&nbsp;                &quot;amountPaid&quot;, &quot;offerAmount&quot;, &quot;minPurchaseAmt&quot;
+&nbsp;            };
+&nbsp;            
+<b class="fc">&nbsp;            for (String fieldName : fieldNames) {</b>
+&nbsp;                try {
+<b class="fc">&nbsp;                    String groupValue = matcher.group(fieldName);</b>
+<b class="pc">&nbsp;                    if (groupValue != null) {</b>
+&nbsp;                        // Get the group number (1-based index) from the pattern
+<b class="fc">&nbsp;                        int groupIndex = groupNumberMap.getOrDefault(fieldName, -1);</b>
+<b class="fc">&nbsp;                        extractedFields.put(fieldName, new FieldResult(groupValue, groupIndex));</b>
+&nbsp;                    }
+&nbsp;                } catch (IllegalArgumentException e) {
+&nbsp;                    // Group name doesn&#39;t exist in pattern, skip it
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            // Map extracted fields to response
+&nbsp;            // Basic Transaction Fields
+<b class="fc">&nbsp;            if (extractedFields.containsKey(&quot;bankAcId&quot;)) {</b>
+<b class="fc">&nbsp;                response.setBankAcId(extractedFields.get(&quot;bankAcId&quot;));</b>
+&nbsp;            }
+<b class="fc">&nbsp;            if (extractedFields.containsKey(&quot;amount&quot;)) {</b>
+<b class="fc">&nbsp;                response.setAmount(extractedFields.get(&quot;amount&quot;));</b>
+&nbsp;            }
+<b class="pc">&nbsp;            if (extractedFields.containsKey(&quot;amountNegative&quot;)) {</b>
+<b class="nc">&nbsp;                response.setAmountNegative(extractedFields.get(&quot;amountNegative&quot;));</b>
+&nbsp;            }
+<b class="fc">&nbsp;            if (extractedFields.containsKey(&quot;date&quot;)) {</b>
+<b class="fc">&nbsp;                response.setDate(extractedFields.get(&quot;date&quot;));</b>
+&nbsp;            }
+<b class="fc">&nbsp;            if (extractedFields.containsKey(&quot;merchant&quot;)) {</b>
+<b class="fc">&nbsp;                response.setMerchant(extractedFields.get(&quot;merchant&quot;));</b>
+&nbsp;            }
+<b class="fc">&nbsp;            if (extractedFields.containsKey(&quot;txnNote&quot;)) {</b>
+<b class="fc">&nbsp;                response.setTxnNote(extractedFields.get(&quot;txnNote&quot;));</b>
+&nbsp;            }
+<b class="fc">&nbsp;            if (extractedFields.containsKey(&quot;balance&quot;)) {</b>
+<b class="fc">&nbsp;                response.setBalance(extractedFields.get(&quot;balance&quot;));</b>
+&nbsp;            }
+<b class="pc">&nbsp;            if (extractedFields.containsKey(&quot;balanceNegative&quot;)) {</b>
+<b class="nc">&nbsp;                response.setBalanceNegative(extractedFields.get(&quot;balanceNegative&quot;));</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            // Sender/Receiver Details
+<b class="fc">&nbsp;            if (extractedFields.containsKey(&quot;senderName&quot;)) {</b>
+<b class="fc">&nbsp;                response.setSenderName(extractedFields.get(&quot;senderName&quot;));</b>
+&nbsp;            }
+<b class="pc">&nbsp;            if (extractedFields.containsKey(&quot;sBank&quot;)) {</b>
+<b class="nc">&nbsp;                response.setSBank(extractedFields.get(&quot;sBank&quot;));</b>
+&nbsp;            }
+<b class="pc">&nbsp;            if (extractedFields.containsKey(&quot;sAcType&quot;)) {</b>
+<b class="nc">&nbsp;                response.setSAcType(extractedFields.get(&quot;sAcType&quot;));</b>
+&nbsp;            }
+<b class="pc">&nbsp;            if (extractedFields.containsKey(&quot;sAcId&quot;)) {</b>
+<b class="nc">&nbsp;                response.setSAcId(extractedFields.get(&quot;sAcId&quot;));</b>
+&nbsp;            }
+<b class="fc">&nbsp;            if (extractedFields.containsKey(&quot;receiverName&quot;)) {</b>
+<b class="fc">&nbsp;                response.setReceiverName(extractedFields.get(&quot;receiverName&quot;));</b>
+&nbsp;            }
+<b class="pc">&nbsp;            if (extractedFields.containsKey(&quot;rBank&quot;)) {</b>
+<b class="nc">&nbsp;                response.setRBank(extractedFields.get(&quot;rBank&quot;));</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            // General Information
+<b class="fc">&nbsp;            if (extractedFields.containsKey(&quot;availLimit&quot;)) {</b>
+<b class="fc">&nbsp;                response.setAvailLimit(extractedFields.get(&quot;availLimit&quot;));</b>
+&nbsp;            }
+<b class="fc">&nbsp;            if (extractedFields.containsKey(&quot;creditLimit&quot;)) {</b>
+<b class="fc">&nbsp;                response.setCreditLimit(extractedFields.get(&quot;creditLimit&quot;));</b>
+&nbsp;            }
+<b class="fc">&nbsp;            if (extractedFields.containsKey(&quot;paymentType&quot;)) {</b>
+<b class="fc">&nbsp;                response.setPaymentType(extractedFields.get(&quot;paymentType&quot;));</b>
+&nbsp;            }
+<b class="fc">&nbsp;            if (extractedFields.containsKey(&quot;city&quot;)) {</b>
+<b class="fc">&nbsp;                response.setCity(extractedFields.get(&quot;city&quot;));</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            // Biller Details
+<b class="pc">&nbsp;            if (extractedFields.containsKey(&quot;billerAcId&quot;)) {</b>
+<b class="nc">&nbsp;                response.setBillerAcId(extractedFields.get(&quot;billerAcId&quot;));</b>
+&nbsp;            }
+<b class="fc">&nbsp;            if (extractedFields.containsKey(&quot;billId&quot;)) {</b>
+<b class="fc">&nbsp;                response.setBillId(extractedFields.get(&quot;billId&quot;));</b>
+&nbsp;            }
+<b class="pc">&nbsp;            if (extractedFields.containsKey(&quot;billDate&quot;)) {</b>
+<b class="nc">&nbsp;                response.setBillDate(extractedFields.get(&quot;billDate&quot;));</b>
+&nbsp;            }
+<b class="pc">&nbsp;            if (extractedFields.containsKey(&quot;billPeriod&quot;)) {</b>
+<b class="nc">&nbsp;                response.setBillPeriod(extractedFields.get(&quot;billPeriod&quot;));</b>
+&nbsp;            }
+<b class="fc">&nbsp;            if (extractedFields.containsKey(&quot;dueDate&quot;)) {</b>
+<b class="fc">&nbsp;                response.setDueDate(extractedFields.get(&quot;dueDate&quot;));</b>
+&nbsp;            }
+<b class="pc">&nbsp;            if (extractedFields.containsKey(&quot;minAmtDue&quot;)) {</b>
+<b class="nc">&nbsp;                response.setMinAmtDue(extractedFields.get(&quot;minAmtDue&quot;));</b>
+&nbsp;            }
+<b class="fc">&nbsp;            if (extractedFields.containsKey(&quot;totAmtDue&quot;)) {</b>
+<b class="fc">&nbsp;                response.setTotAmtDue(extractedFields.get(&quot;totAmtDue&quot;));</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            // FD Details
+<b class="fc">&nbsp;            if (extractedFields.containsKey(&quot;principalAmount&quot;)) {</b>
+<b class="fc">&nbsp;                response.setPrincipalAmount(extractedFields.get(&quot;principalAmount&quot;));</b>
+&nbsp;            }
+<b class="pc">&nbsp;            if (extractedFields.containsKey(&quot;frequency&quot;)) {</b>
+<b class="nc">&nbsp;                response.setFrequency(extractedFields.get(&quot;frequency&quot;));</b>
+&nbsp;            }
+<b class="fc">&nbsp;            if (extractedFields.containsKey(&quot;maturityDate&quot;)) {</b>
+<b class="fc">&nbsp;                response.setMaturityDate(extractedFields.get(&quot;maturityDate&quot;));</b>
+&nbsp;            }
+<b class="pc">&nbsp;            if (extractedFields.containsKey(&quot;maturityAmount&quot;)) {</b>
+<b class="nc">&nbsp;                response.setMaturityAmount(extractedFields.get(&quot;maturityAmount&quot;));</b>
+&nbsp;            }
+<b class="fc">&nbsp;            if (extractedFields.containsKey(&quot;rateOfInterest&quot;)) {</b>
+<b class="fc">&nbsp;                response.setRateOfInterest(extractedFields.get(&quot;rateOfInterest&quot;));</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            // MF Details
+<b class="fc">&nbsp;            if (extractedFields.containsKey(&quot;mfNav&quot;)) {</b>
+<b class="fc">&nbsp;                response.setMfNav(extractedFields.get(&quot;mfNav&quot;));</b>
+&nbsp;            }
+<b class="fc">&nbsp;            if (extractedFields.containsKey(&quot;mfUnits&quot;)) {</b>
+<b class="fc">&nbsp;                response.setMfUnits(extractedFields.get(&quot;mfUnits&quot;));</b>
+&nbsp;            }
+<b class="pc">&nbsp;            if (extractedFields.containsKey(&quot;mfArn&quot;)) {</b>
+<b class="nc">&nbsp;                response.setMfArn(extractedFields.get(&quot;mfArn&quot;));</b>
+&nbsp;            }
+<b class="pc">&nbsp;            if (extractedFields.containsKey(&quot;mfBalUnits&quot;)) {</b>
+<b class="nc">&nbsp;                response.setMfBalUnits(extractedFields.get(&quot;mfBalUnits&quot;));</b>
+&nbsp;            }
+<b class="pc">&nbsp;            if (extractedFields.containsKey(&quot;mfSchemeBal&quot;)) {</b>
+<b class="nc">&nbsp;                response.setMfSchemeBal(extractedFields.get(&quot;mfSchemeBal&quot;));</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            // Order Details
+<b class="pc">&nbsp;            if (extractedFields.containsKey(&quot;amountPaid&quot;)) {</b>
+<b class="nc">&nbsp;                response.setAmountPaid(extractedFields.get(&quot;amountPaid&quot;));</b>
+&nbsp;            }
+<b class="pc">&nbsp;            if (extractedFields.containsKey(&quot;offerAmount&quot;)) {</b>
+<b class="nc">&nbsp;                response.setOfferAmount(extractedFields.get(&quot;offerAmount&quot;));</b>
+&nbsp;            }
+<b class="pc">&nbsp;            if (extractedFields.containsKey(&quot;minPurchaseAmt&quot;)) {</b>
+<b class="nc">&nbsp;                response.setMinPurchaseAmt(extractedFields.get(&quot;minPurchaseAmt&quot;));</b>
+&nbsp;            }
+&nbsp;
+&nbsp;        } catch (Exception e) {
+<b class="fc">&nbsp;            return response;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return response;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Finds the group number (1-based) for each named group in the regex pattern.
+&nbsp;     * Named groups are in the format (?&lt;name&gt;...)
+&nbsp;     */
+&nbsp;    private Map&lt;String, Integer&gt; findGroupNumbers(String regexPattern) {
+<b class="fc">&nbsp;        Map&lt;String, Integer&gt; groupNumberMap = new HashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;        int groupCount = 0;</b>
+<b class="fc">&nbsp;        int i = 0;</b>
+&nbsp;        
+<b class="fc">&nbsp;        while (i &lt; regexPattern.length()) {</b>
+<b class="fc">&nbsp;            if (regexPattern.charAt(i) == &#39;\\&#39;) {</b>
+&nbsp;                // Skip escaped characters (including escaped parentheses)
+<b class="fc">&nbsp;                i += 2;</b>
+<b class="pc">&nbsp;                if (i &gt; regexPattern.length()) break;</b>
+&nbsp;                continue;
+&nbsp;            }
+&nbsp;            
+<b class="fc">&nbsp;            if (regexPattern.charAt(i) == &#39;(&#39;) {</b>
+&nbsp;                // Check if it&#39;s a named group: (?&lt;name&gt;...)
+<b class="pc">&nbsp;                if (i + 3 &lt; regexPattern.length() &amp;&amp; </b>
+<b class="pc">&nbsp;                    regexPattern.charAt(i + 1) == &#39;?&#39; &amp;&amp; </b>
+<b class="fc">&nbsp;                    regexPattern.charAt(i + 2) == &#39;&lt;&#39;) {</b>
+&nbsp;                    
+&nbsp;                    // Find the closing &#39;&gt;&#39; for the group name
+<b class="fc">&nbsp;                    int nameStart = i + 3;</b>
+<b class="fc">&nbsp;                    int nameEnd = regexPattern.indexOf(&#39;&gt;&#39;, nameStart);</b>
+&nbsp;                    
+<b class="pc">&nbsp;                    if (nameEnd != -1) {</b>
+<b class="fc">&nbsp;                        String groupName = regexPattern.substring(nameStart, nameEnd);</b>
+<b class="fc">&nbsp;                        groupCount++;</b>
+<b class="fc">&nbsp;                        groupNumberMap.put(groupName, groupCount);</b>
+<b class="fc">&nbsp;                        i = nameEnd + 1;</b>
+&nbsp;                        continue;
+&nbsp;                    }
+<b class="pc">&nbsp;                } else if (i + 2 &lt; regexPattern.length() &amp;&amp; </b>
+<b class="pc">&nbsp;                          regexPattern.charAt(i + 1) == &#39;?&#39;) {</b>
+&nbsp;                    // Non-capturing group: (?:...), (?=...), (?!...), (?&lt;=...), (?&lt;!...)
+&nbsp;                    // Skip the &#39;?&#39;, don&#39;t increment groupCount, continue parsing normally
+<b class="fc">&nbsp;                    i += 2;</b>
+&nbsp;                    continue;
+&nbsp;                } else {
+&nbsp;                    // Regular capturing group
+<b class="nc">&nbsp;                    groupCount++;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;            
+<b class="fc">&nbsp;            i++;</b>
+&nbsp;        }
+&nbsp;        
+<b class="fc">&nbsp;        return groupNumberMap;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-01-30 13:57</div>
+</div>
+</body>
+</html>

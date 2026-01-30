@@ -1,0 +1,196 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > UserService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.regexflow.backend.Service</a>
+</div>
+
+<h1>Coverage Summary for Class: UserService (com.regexflow.backend.Service)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">UserService</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/24)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.regexflow.backend.Service;
+&nbsp;
+&nbsp;import com.regexflow.backend.Dto.UpdateUserRoleRequest;
+&nbsp;import com.regexflow.backend.Dto.UserRequestDto;
+&nbsp;import com.regexflow.backend.Dto.UserResponseDto;
+&nbsp;import com.regexflow.backend.Entity.Users;
+&nbsp;import com.regexflow.backend.Enums.UserRole;
+&nbsp;import com.regexflow.backend.Mapper.UsersMapper;
+&nbsp;import com.regexflow.backend.Repository.UserRepository;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;
+&nbsp;@Service
+<b class="nc">&nbsp;public class UserService {</b>
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    private UserRepository userRepository;
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    private BCryptPasswordEncoder passwordEncoder;
+&nbsp;
+&nbsp;    public List&lt;UserResponseDto&gt; getAllUsers() {
+<b class="nc">&nbsp;        return userRepository.findAll().stream()</b>
+<b class="nc">&nbsp;                .map(UsersMapper::toDto)</b>
+<b class="nc">&nbsp;                .collect(Collectors.toList());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public UserResponseDto updateUserRole(Long userId, UpdateUserRoleRequest request) {
+<b class="nc">&nbsp;        Users user = userRepository.findById(userId)</b>
+<b class="nc">&nbsp;                .orElseThrow(() -&gt; new RuntimeException(&quot;User not found with id: &quot; + userId));</b>
+&nbsp;        
+&nbsp;        // Prevent updating to ADMIN role - only one admin should exist
+<b class="nc">&nbsp;        if (request.getRole() == UserRole.ADMIN) {</b>
+&nbsp;            // Check if there&#39;s already an admin (and it&#39;s not the current user being updated)
+<b class="nc">&nbsp;            boolean adminExists = userRepository.findAll().stream()</b>
+<b class="nc">&nbsp;                    .anyMatch(u -&gt; u.getRole() == UserRole.ADMIN &amp;&amp; !u.getUId().equals(userId));</b>
+&nbsp;            
+<b class="nc">&nbsp;            if (adminExists) {</b>
+<b class="nc">&nbsp;                throw new RuntimeException(&quot;Cannot update to ADMIN role. Only one admin can exist in the system.&quot;);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;        
+<b class="nc">&nbsp;        user.setRole(request.getRole());</b>
+<b class="nc">&nbsp;        Users updatedUser = userRepository.save(user);</b>
+&nbsp;        
+<b class="nc">&nbsp;        return UsersMapper.toDto(updatedUser);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Users getUserById(Long userId) {
+<b class="nc">&nbsp;        return userRepository.findById(userId)</b>
+<b class="nc">&nbsp;                .orElseThrow(() -&gt; new RuntimeException(&quot;User not found with id: &quot; + userId));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Create a new user with a specific role
+&nbsp;     * This is used by ADMIN to create MAKER or CHECKER users
+&nbsp;     * Regular users should use /auth/register which defaults to CUSTOMER
+&nbsp;     * Cannot create ADMIN users - only one admin exists (created by DataInitializer)
+&nbsp;     */
+&nbsp;    public UserResponseDto createUser(UserRequestDto request) {
+<b class="nc">&nbsp;        if (userRepository.existsByEmail(request.getEmail())) {</b>
+<b class="nc">&nbsp;            throw new RuntimeException(&quot;Email already exists&quot;);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Prevent creating ADMIN users - only one admin should exist
+<b class="nc">&nbsp;        if (request.getRole() == UserRole.ADMIN) {</b>
+<b class="nc">&nbsp;            throw new RuntimeException(&quot;Cannot create ADMIN user. Only one admin can exist in the system.&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Users newUser = UsersMapper.toEntity(request);</b>
+<b class="nc">&nbsp;        newUser.setPasswordHash(passwordEncoder.encode(request.getPassword()));</b>
+&nbsp;        
+<b class="nc">&nbsp;        Users savedUser = userRepository.save(newUser);</b>
+<b class="nc">&nbsp;        return UsersMapper.toDto(savedUser);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-01-30 13:57</div>
+</div>
+</body>
+</html>

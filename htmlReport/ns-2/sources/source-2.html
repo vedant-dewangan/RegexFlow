@@ -1,0 +1,201 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DataInitializer</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.regexflow.backend.Config</a>
+</div>
+
+<h1>Coverage Summary for Class: DataInitializer (com.regexflow.backend.Config)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DataInitializer</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/17)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.regexflow.backend.Config;
+&nbsp;
+&nbsp;import com.regexflow.backend.Entity.Users;
+&nbsp;import com.regexflow.backend.Enums.UserRole;
+&nbsp;import com.regexflow.backend.Repository.UserRepository;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.beans.factory.annotation.Value;
+&nbsp;import org.springframework.boot.CommandLineRunner;
+&nbsp;import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+&nbsp;import org.springframework.stereotype.Component;
+&nbsp;
+&nbsp;/**
+&nbsp; * This class runs when the application starts
+&nbsp; * It creates a default ADMIN user if no admin exists
+&nbsp; * This solves the &quot;chicken and egg&quot; problem - you need an admin to create admins!
+&nbsp; */
+&nbsp;@Component
+<b class="nc">&nbsp;public class DataInitializer implements CommandLineRunner {</b>
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    private UserRepository userRepository;
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    private BCryptPasswordEncoder passwordEncoder;
+&nbsp;
+&nbsp;    // Default admin configuration from application.properties
+&nbsp;    @Value(&quot;${admin.default.name:System Admin}&quot;)
+&nbsp;    private String defaultAdminName;
+&nbsp;
+&nbsp;    @Value(&quot;${admin.default.email:admin@regexflow.com}&quot;)
+&nbsp;    private String defaultAdminEmail;
+&nbsp;
+&nbsp;    @Value(&quot;${admin.default.password:admin123}&quot;)
+&nbsp;    private String defaultAdminPassword;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void run(String... args) throws Exception {
+&nbsp;        // Check if any admin exists
+<b class="nc">&nbsp;        boolean adminExists = userRepository.findAll().stream()</b>
+<b class="nc">&nbsp;                .anyMatch(user -&gt; user.getRole() == UserRole.ADMIN);</b>
+&nbsp;
+&nbsp;        // If no admin exists, create a default one
+<b class="nc">&nbsp;        if (!adminExists) {</b>
+<b class="nc">&nbsp;            Users defaultAdmin = new Users();</b>
+<b class="nc">&nbsp;            defaultAdmin.setName(defaultAdminName);</b>
+<b class="nc">&nbsp;            defaultAdmin.setEmail(defaultAdminEmail);</b>
+<b class="nc">&nbsp;            defaultAdmin.setPasswordHash(passwordEncoder.encode(defaultAdminPassword));</b>
+<b class="nc">&nbsp;            defaultAdmin.setRole(UserRole.ADMIN);</b>
+&nbsp;
+<b class="nc">&nbsp;            userRepository.save(defaultAdmin);</b>
+<b class="nc">&nbsp;            System.out.println(&quot;==========================================&quot;);</b>
+<b class="nc">&nbsp;            System.out.println(&quot;Default ADMIN user created!&quot;);</b>
+<b class="nc">&nbsp;            System.out.println(&quot;Name: &quot; + defaultAdminName);</b>
+<b class="nc">&nbsp;            System.out.println(&quot;Email: &quot; + defaultAdminEmail);</b>
+<b class="nc">&nbsp;            System.out.println(&quot;Password: &quot; + defaultAdminPassword);</b>
+<b class="nc">&nbsp;            System.out.println(&quot;Please change this password after first login!&quot;);</b>
+<b class="nc">&nbsp;            System.out.println(&quot;==========================================&quot;);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Optional: Create sample MAKER and CHECKER users for testing
+&nbsp;        // Uncomment below if you want sample users created automatically
+&nbsp;        
+&nbsp;        /*
+&nbsp;        if (!userRepository.existsByEmail(&quot;maker@regexflow.com&quot;)) {
+&nbsp;            Users maker = new Users();
+&nbsp;            maker.setName(&quot;Test Maker&quot;);
+&nbsp;            maker.setEmail(&quot;maker@regexflow.com&quot;);
+&nbsp;            maker.setPasswordHash(passwordEncoder.encode(&quot;maker123&quot;));
+&nbsp;            maker.setRole(UserRole.MAKER);
+&nbsp;            userRepository.save(maker);
+&nbsp;            System.out.println(&quot;Sample MAKER user created: maker@regexflow.com / maker123&quot;);
+&nbsp;        }
+&nbsp;
+&nbsp;        if (!userRepository.existsByEmail(&quot;checker@regexflow.com&quot;)) {
+&nbsp;            Users checker = new Users();
+&nbsp;            checker.setName(&quot;Test Checker&quot;);
+&nbsp;            checker.setEmail(&quot;checker@regexflow.com&quot;);
+&nbsp;            checker.setPasswordHash(passwordEncoder.encode(&quot;checker123&quot;));
+&nbsp;            checker.setRole(UserRole.CHECKER);
+&nbsp;            userRepository.save(checker);
+&nbsp;            System.out.println(&quot;Sample CHECKER user created: checker@regexflow.com / checker123&quot;);
+&nbsp;        }
+&nbsp;        */
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-01-30 13:57</div>
+</div>
+</body>
+</html>

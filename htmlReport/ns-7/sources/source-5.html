@@ -1,0 +1,281 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > RegexTemplateService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.regexflow.backend.Service</a>
+</div>
+
+<h1>Coverage Summary for Class: RegexTemplateService (com.regexflow.backend.Service)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">RegexTemplateService</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    83.3%
+  </span>
+  <span class="absValue">
+    (35/42)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    95.2%
+  </span>
+  <span class="absValue">
+    (79/83)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.regexflow.backend.Service;
+&nbsp;
+&nbsp;import com.regexflow.backend.Dto.RegexTemplateDto;
+&nbsp;import com.regexflow.backend.Entity.Bank;
+&nbsp;import com.regexflow.backend.Entity.RegexTemplate;
+&nbsp;import com.regexflow.backend.Entity.Users;
+&nbsp;import com.regexflow.backend.Enums.RegexTemplateStatus;
+&nbsp;import com.regexflow.backend.Mapper.RegexTemplateMapper;
+&nbsp;import com.regexflow.backend.Repository.BankRepository;
+&nbsp;import com.regexflow.backend.Repository.RegexTemplateRepository;
+&nbsp;import com.regexflow.backend.Repository.UserRepository;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;@Service
+&nbsp;public class RegexTemplateService {
+&nbsp;    private final RegexTemplateRepository regexTemplateRepository;
+&nbsp;    private final UserRepository userRepository;
+&nbsp;    private final BankRepository bankRepository;
+&nbsp;
+&nbsp;    public RegexTemplateService(
+&nbsp;            RegexTemplateRepository regexTemplateRepository,
+&nbsp;            UserRepository userRepository,
+<b class="fc">&nbsp;            BankRepository bankRepository) {</b>
+<b class="fc">&nbsp;        this.regexTemplateRepository = regexTemplateRepository;</b>
+<b class="fc">&nbsp;        this.userRepository = userRepository;</b>
+<b class="fc">&nbsp;        this.bankRepository = bankRepository;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;RegexTemplateDto&gt; getAllRegexTemplates() {
+<b class="fc">&nbsp;        return regexTemplateRepository.findAll()</b>
+<b class="fc">&nbsp;            .stream()</b>
+<b class="fc">&nbsp;            .map(RegexTemplateMapper::toDto)</b>
+<b class="fc">&nbsp;            .toList();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;RegexTemplateDto&gt; getTemplatesByMakerId(Long makerId) {
+<b class="fc">&nbsp;        Users maker = userRepository.findById(makerId)</b>
+<b class="fc">&nbsp;            .orElseThrow(() -&gt; new RuntimeException(&quot;Maker not found with id: &quot; + makerId));</b>
+&nbsp;        
+<b class="fc">&nbsp;        return regexTemplateRepository.findByCreatedBy(maker)</b>
+<b class="fc">&nbsp;            .stream()</b>
+<b class="fc">&nbsp;            .map(RegexTemplateMapper::toDto)</b>
+<b class="fc">&nbsp;            .toList();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public RegexTemplateDto saveAsDraft(RegexTemplateDto dto, Long userId) {
+&nbsp;        // Validate required fields
+<b class="fc">&nbsp;        if (dto.getSenderHeader() == null || dto.getSenderHeader().isBlank()) {</b>
+<b class="fc">&nbsp;            throw new RuntimeException(&quot;Sender header is required&quot;);</b>
+&nbsp;        }
+<b class="pc">&nbsp;        if (dto.getPattern() == null || dto.getPattern().isBlank()) {</b>
+<b class="fc">&nbsp;            throw new RuntimeException(&quot;Pattern is required&quot;);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        if (dto.getBankId() == null) {</b>
+<b class="fc">&nbsp;            throw new RuntimeException(&quot;Bank ID is required&quot;);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        if (dto.getSmsType() == null) {</b>
+<b class="fc">&nbsp;            throw new RuntimeException(&quot;SMS type is required&quot;);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        if (dto.getTransactionType() == null) {</b>
+<b class="fc">&nbsp;            throw new RuntimeException(&quot;Transaction type is required&quot;);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        if (dto.getPaymentType() == null) {</b>
+<b class="fc">&nbsp;            throw new RuntimeException(&quot;Payment type is required&quot;);</b>
+&nbsp;        }
+&nbsp;        
+<b class="fc">&nbsp;        Users user = userRepository.findById(userId)</b>
+<b class="fc">&nbsp;            .orElseThrow(() -&gt; new RuntimeException(&quot;User not found with id: &quot; + userId));</b>
+&nbsp;        
+<b class="fc">&nbsp;        Bank bank = bankRepository.findById(dto.getBankId())</b>
+<b class="fc">&nbsp;            .orElseThrow(() -&gt; new RuntimeException(&quot;Bank not found with id: &quot; + dto.getBankId()));</b>
+&nbsp;
+&nbsp;        // Check for duplicate draft
+<b class="fc">&nbsp;        Optional&lt;RegexTemplate&gt; existingDraft = regexTemplateRepository.findBySenderHeaderAndPatternAndBankAndSmsTypeAndTransactionTypeAndPaymentTypeAndStatus(</b>
+<b class="fc">&nbsp;            dto.getSenderHeader(),</b>
+<b class="fc">&nbsp;            dto.getPattern(),</b>
+&nbsp;            bank,
+<b class="fc">&nbsp;            dto.getSmsType(),</b>
+<b class="fc">&nbsp;            dto.getTransactionType(),</b>
+<b class="fc">&nbsp;            dto.getPaymentType(),</b>
+&nbsp;            RegexTemplateStatus.DRAFT
+&nbsp;        );
+&nbsp;
+<b class="fc">&nbsp;        if (existingDraft.isPresent()) {</b>
+<b class="fc">&nbsp;            throw new RuntimeException(&quot;A draft template with the same pattern, sender header, bank, SMS type, transaction type, and payment type already exists&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        RegexTemplate template = createTemplateFromDto(dto, userId);</b>
+<b class="fc">&nbsp;        template.setStatus(RegexTemplateStatus.DRAFT);</b>
+<b class="fc">&nbsp;        RegexTemplate savedTemplate = regexTemplateRepository.save(template);</b>
+<b class="fc">&nbsp;        return RegexTemplateMapper.toDto(savedTemplate);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public RegexTemplateDto updateToPending(Long templateId, RegexTemplateDto dto, Long userId) {
+&nbsp;        // Validate required fields
+<b class="pc">&nbsp;        if (dto.getSenderHeader() == null || dto.getSenderHeader().isBlank()) {</b>
+<b class="fc">&nbsp;            throw new RuntimeException(&quot;Sender header is required&quot;);</b>
+&nbsp;        }
+<b class="pc">&nbsp;        if (dto.getPattern() == null || dto.getPattern().isBlank()) {</b>
+<b class="fc">&nbsp;            throw new RuntimeException(&quot;Pattern is required&quot;);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        if (dto.getSampleRawMsg() == null || dto.getSampleRawMsg().isBlank()) {</b>
+<b class="fc">&nbsp;            throw new RuntimeException(&quot;Sample Raw Message is required and cannot be empty&quot;);</b>
+&nbsp;        }
+<b class="pc">&nbsp;        if (dto.getBankId() == null) {</b>
+<b class="nc">&nbsp;            throw new RuntimeException(&quot;Bank ID is required&quot;);</b>
+&nbsp;        }
+<b class="pc">&nbsp;        if (dto.getSmsType() == null) {</b>
+<b class="nc">&nbsp;            throw new RuntimeException(&quot;SMS type is required&quot;);</b>
+&nbsp;        }
+<b class="pc">&nbsp;        if (dto.getTransactionType() == null) {</b>
+<b class="nc">&nbsp;            throw new RuntimeException(&quot;Transaction type is required&quot;);</b>
+&nbsp;        }
+<b class="pc">&nbsp;        if (dto.getPaymentType() == null) {</b>
+<b class="nc">&nbsp;            throw new RuntimeException(&quot;Payment type is required&quot;);</b>
+&nbsp;        }
+&nbsp;        
+<b class="fc">&nbsp;        RegexTemplate existingTemplate = regexTemplateRepository.findById(templateId)</b>
+<b class="fc">&nbsp;            .orElseThrow(() -&gt; new RuntimeException(&quot;Template not found with id: &quot; + templateId));</b>
+&nbsp;
+&nbsp;        // Verify the template belongs to the user or user is admin
+<b class="fc">&nbsp;        if (!existingTemplate.getCreatedBy().getUId().equals(userId)) {</b>
+<b class="fc">&nbsp;            throw new RuntimeException(&quot;You can only update templates created by you&quot;);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Only allow updating DRAFT templates to PENDING
+<b class="fc">&nbsp;        if (existingTemplate.getStatus() != RegexTemplateStatus.DRAFT) {</b>
+<b class="fc">&nbsp;            throw new RuntimeException(&quot;Only DRAFT templates can be updated to PENDING status&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        Bank bank = bankRepository.findById(dto.getBankId())</b>
+<b class="fc">&nbsp;            .orElseThrow(() -&gt; new RuntimeException(&quot;Bank not found with id: &quot; + dto.getBankId()));</b>
+&nbsp;
+&nbsp;        // Update template fields
+<b class="fc">&nbsp;        existingTemplate.setSenderHeader(dto.getSenderHeader());</b>
+<b class="fc">&nbsp;        existingTemplate.setPattern(dto.getPattern());</b>
+<b class="fc">&nbsp;        existingTemplate.setSampleRawMsg(dto.getSampleRawMsg());</b>
+<b class="fc">&nbsp;        existingTemplate.setSmsType(dto.getSmsType());</b>
+<b class="fc">&nbsp;        existingTemplate.setTransactionType(dto.getTransactionType());</b>
+<b class="fc">&nbsp;        existingTemplate.setPaymentType(dto.getPaymentType());</b>
+<b class="fc">&nbsp;        existingTemplate.setBank(bank);</b>
+<b class="fc">&nbsp;        existingTemplate.setStatus(RegexTemplateStatus.PENDING);</b>
+&nbsp;
+<b class="fc">&nbsp;        RegexTemplate updatedTemplate = regexTemplateRepository.save(existingTemplate);</b>
+<b class="fc">&nbsp;        return RegexTemplateMapper.toDto(updatedTemplate);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private RegexTemplate createTemplateFromDto(RegexTemplateDto dto, Long userId) {
+<b class="fc">&nbsp;        Users user = userRepository.findById(userId)</b>
+<b class="fc">&nbsp;            .orElseThrow(() -&gt; new RuntimeException(&quot;User not found with id: &quot; + userId));</b>
+&nbsp;        
+<b class="fc">&nbsp;        Bank bank = bankRepository.findById(dto.getBankId())</b>
+<b class="fc">&nbsp;            .orElseThrow(() -&gt; new RuntimeException(&quot;Bank not found with id: &quot; + dto.getBankId()));</b>
+&nbsp;
+<b class="fc">&nbsp;        RegexTemplate template = RegexTemplateMapper.toEntity(dto);</b>
+<b class="fc">&nbsp;        template.setTemplateId(null); // Ensure it&#39;s a new entity</b>
+<b class="fc">&nbsp;        template.setCreatedBy(user);</b>
+<b class="fc">&nbsp;        template.setBank(bank);</b>
+&nbsp;        
+<b class="fc">&nbsp;        return template;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-01-30 13:57</div>
+</div>
+</body>
+</html>

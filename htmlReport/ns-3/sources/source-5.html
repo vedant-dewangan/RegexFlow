@@ -1,0 +1,287 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > RegexController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.regexflow.backend.Controller</a>
+</div>
+
+<h1>Coverage Summary for Class: RegexController (com.regexflow.backend.Controller)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">RegexController</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/48)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/65)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.regexflow.backend.Controller;
+&nbsp;
+&nbsp;import com.regexflow.backend.Dto.RegexProcessRequest;
+&nbsp;import com.regexflow.backend.Dto.RegexProcessResponse;
+&nbsp;import com.regexflow.backend.Dto.RegexTemplateDto;
+&nbsp;import com.regexflow.backend.Enums.UserRole;
+&nbsp;import com.regexflow.backend.Service.RegexProcessService;
+&nbsp;import com.regexflow.backend.Service.RegexTemplateService;
+&nbsp;import jakarta.servlet.http.HttpSession;
+&nbsp;import jakarta.validation.Valid;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.http.HttpStatus;
+&nbsp;import org.springframework.http.ResponseEntity;
+&nbsp;import org.springframework.validation.FieldError;
+&nbsp;import org.springframework.web.bind.MethodArgumentNotValidException;
+&nbsp;import org.springframework.web.bind.annotation.*;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;@RestController
+&nbsp;@RequestMapping(&quot;/regex&quot;)
+<b class="nc">&nbsp;public class RegexController {</b>
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    private RegexProcessService regexProcessService;
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    private RegexTemplateService regexTemplateService;
+&nbsp;
+&nbsp;    @GetMapping
+&nbsp;    public ResponseEntity&lt;List&lt;RegexTemplateDto&gt;&gt; getAllRegexTemplates(HttpSession session) {
+<b class="nc">&nbsp;        if (!isAdmin(session)) {</b>
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return ResponseEntity.ok(regexTemplateService.getAllRegexTemplates());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @GetMapping(&quot;/{id}&quot;)
+&nbsp;    public ResponseEntity&lt;List&lt;RegexTemplateDto&gt;&gt; getTemplatesByMakerId(
+&nbsp;            @PathVariable Long id,
+&nbsp;            HttpSession session) {
+<b class="nc">&nbsp;        if (!isAdminMakerChecker(session)) {</b>
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();</b>
+&nbsp;        }
+&nbsp;        try {
+<b class="nc">&nbsp;            return ResponseEntity.ok(regexTemplateService.getTemplatesByMakerId(id));</b>
+&nbsp;        } catch (RuntimeException e) {
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @PostMapping(&quot;/save-as-draft&quot;)
+&nbsp;    public ResponseEntity&lt;?&gt; saveAsDraft(
+&nbsp;            @RequestBody RegexTemplateDto dto,
+&nbsp;            HttpSession session) {
+<b class="nc">&nbsp;        if (!isMaker(session)) {</b>
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();</b>
+&nbsp;        }
+&nbsp;        try {
+<b class="nc">&nbsp;            Long userId = (Long) session.getAttribute(&quot;userId&quot;);</b>
+<b class="nc">&nbsp;            RegexTemplateDto savedTemplate = regexTemplateService.saveAsDraft(dto, userId);</b>
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.CREATED).body(savedTemplate);</b>
+&nbsp;        } catch (RuntimeException e) {
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.BAD_REQUEST)</b>
+<b class="nc">&nbsp;                .body(&quot;{\&quot;error\&quot;: \&quot;&quot; + e.getMessage() + &quot;\&quot;}&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @PutMapping(&quot;/push/{templateId}&quot;)
+&nbsp;    public ResponseEntity&lt;?&gt; pushTemplate(
+&nbsp;            @PathVariable Long templateId,
+&nbsp;            @Valid @RequestBody RegexTemplateDto dto,
+&nbsp;            HttpSession session) {
+<b class="nc">&nbsp;        if (!isMaker(session)) {</b>
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();</b>
+&nbsp;        }
+&nbsp;        try {
+<b class="nc">&nbsp;            Long userId = (Long) session.getAttribute(&quot;userId&quot;);</b>
+<b class="nc">&nbsp;            RegexTemplateDto updatedTemplate = regexTemplateService.updateToPending(templateId, dto, userId);</b>
+<b class="nc">&nbsp;            return ResponseEntity.ok(updatedTemplate);</b>
+&nbsp;        } catch (RuntimeException e) {
+<b class="nc">&nbsp;            if (e.getMessage().contains(&quot;not found&quot;)) {</b>
+<b class="nc">&nbsp;                return ResponseEntity.status(HttpStatus.NOT_FOUND)</b>
+<b class="nc">&nbsp;                    .body(&quot;{\&quot;error\&quot;: \&quot;&quot; + e.getMessage() + &quot;\&quot;}&quot;);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.BAD_REQUEST)</b>
+<b class="nc">&nbsp;                .body(&quot;{\&quot;error\&quot;: \&quot;&quot; + e.getMessage() + &quot;\&quot;}&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @PostMapping(&quot;/process&quot;)
+&nbsp;    public ResponseEntity&lt;?&gt; processRegex(
+&nbsp;            @RequestBody RegexProcessRequest request,
+&nbsp;            HttpSession session) {
+<b class="nc">&nbsp;        if (!isAdminMakerChecker(session)) {</b>
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (request.getRegexPattern() == null || request.getRegexPattern().isBlank()) {</b>
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.BAD_REQUEST)</b>
+<b class="nc">&nbsp;                .body(&quot;{\&quot;error\&quot;: \&quot;Regex pattern is required\&quot;}&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (request.getRawMsg() == null || request.getRawMsg().isBlank()) {</b>
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.BAD_REQUEST)</b>
+<b class="nc">&nbsp;                .body(&quot;{\&quot;error\&quot;: \&quot;Raw message is required\&quot;}&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (request.getSmsType() == null) {</b>
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.BAD_REQUEST)</b>
+<b class="nc">&nbsp;                .body(&quot;{\&quot;error\&quot;: \&quot;SMS type is required\&quot;}&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (request.getPaymentType() == null) {</b>
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.BAD_REQUEST)</b>
+<b class="nc">&nbsp;                .body(&quot;{\&quot;error\&quot;: \&quot;Payment type is required\&quot;}&quot;);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        try {
+<b class="nc">&nbsp;            RegexProcessResponse response = regexProcessService.processRegex(request);</b>
+<b class="nc">&nbsp;            return ResponseEntity.ok(response);</b>
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.BAD_REQUEST)</b>
+<b class="nc">&nbsp;                .body(&quot;{\&quot;error\&quot;: \&quot;&quot; + e.getMessage() + &quot;\&quot;}&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isAdmin(HttpSession session) {
+<b class="nc">&nbsp;        if (session == null || session.getAttribute(&quot;token&quot;) == null || session.getAttribute(&quot;userId&quot;) == null) {</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        String userRole = String.valueOf(session.getAttribute(&quot;userRole&quot;));</b>
+<b class="nc">&nbsp;        return UserRole.ADMIN.name().equals(userRole);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isMaker(HttpSession session) {
+<b class="nc">&nbsp;        if (session == null || session.getAttribute(&quot;token&quot;) == null || session.getAttribute(&quot;userId&quot;) == null) {</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        String userRole = String.valueOf(session.getAttribute(&quot;userRole&quot;));</b>
+<b class="nc">&nbsp;        return UserRole.MAKER.name().equals(userRole);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isAdminMakerChecker(HttpSession session) {
+<b class="nc">&nbsp;        if (session == null || session.getAttribute(&quot;token&quot;) == null || session.getAttribute(&quot;userId&quot;) == null) {</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        String userRole = String.valueOf(session.getAttribute(&quot;userRole&quot;));</b>
+<b class="nc">&nbsp;        return UserRole.ADMIN.name().equals(userRole)</b>
+<b class="nc">&nbsp;            || UserRole.MAKER.name().equals(userRole)</b>
+<b class="nc">&nbsp;            || UserRole.CHECKER.name().equals(userRole);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Exception handler for validation errors
+&nbsp;     */
+&nbsp;    @ExceptionHandler(MethodArgumentNotValidException.class)
+&nbsp;    public ResponseEntity&lt;String&gt; handleValidationExceptions(
+&nbsp;            MethodArgumentNotValidException ex) {
+<b class="nc">&nbsp;        StringBuilder errorMessage = new StringBuilder();</b>
+<b class="nc">&nbsp;        ex.getBindingResult().getAllErrors().forEach((error) -&gt; {</b>
+<b class="nc">&nbsp;            String message = error.getDefaultMessage();</b>
+<b class="nc">&nbsp;            if (errorMessage.length() &gt; 0) {</b>
+<b class="nc">&nbsp;                errorMessage.append(&quot;, &quot;);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            errorMessage.append(message);</b>
+&nbsp;        });
+<b class="nc">&nbsp;        return ResponseEntity.status(HttpStatus.BAD_REQUEST)</b>
+<b class="nc">&nbsp;            .body(&quot;{\&quot;error\&quot;: \&quot;&quot; + errorMessage.toString() + &quot;\&quot;}&quot;);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-01-30 13:57</div>
+</div>
+</body>
+</html>

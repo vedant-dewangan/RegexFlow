@@ -1,0 +1,99 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > RegexTemplateRepository</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.regexflow.backend.Repository</a>
+</div>
+
+<h1>Coverage Summary for Class: RegexTemplateRepository (com.regexflow.backend.Repository)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">RegexTemplateRepository</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.regexflow.backend.Repository;
+&nbsp;
+&nbsp;import com.regexflow.backend.Entity.Bank;
+&nbsp;import com.regexflow.backend.Entity.RegexTemplate;
+&nbsp;import com.regexflow.backend.Entity.Users;
+&nbsp;import com.regexflow.backend.Enums.PaymentType;
+&nbsp;import com.regexflow.backend.Enums.RegexTemplateStatus;
+&nbsp;import com.regexflow.backend.Enums.SmsType;
+&nbsp;import com.regexflow.backend.Enums.TransactionType;
+&nbsp;import org.springframework.data.jpa.repository.JpaRepository;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;public interface RegexTemplateRepository extends JpaRepository&lt;RegexTemplate,Long&gt; {
+&nbsp;    List&lt;RegexTemplate&gt; findByCreatedBy(Users createdBy);
+&nbsp;    
+&nbsp;    List&lt;RegexTemplate&gt; findByStatus(RegexTemplateStatus status);
+&nbsp;    
+&nbsp;    Optional&lt;RegexTemplate&gt; findBySenderHeaderAndPatternAndBankAndSmsTypeAndTransactionTypeAndPaymentTypeAndStatus(
+&nbsp;        String senderHeader,
+&nbsp;        String pattern,
+&nbsp;        Bank bank,
+&nbsp;        SmsType smsType,
+&nbsp;        TransactionType transactionType,
+&nbsp;        PaymentType paymentType,
+&nbsp;        RegexTemplateStatus status
+&nbsp;    );
+&nbsp;    
+&nbsp;    List&lt;RegexTemplate&gt; findBySenderHeaderAndStatus(String senderHeader, RegexTemplateStatus status);
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-01-30 13:57</div>
+</div>
+</body>
+</html>

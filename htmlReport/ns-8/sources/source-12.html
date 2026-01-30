@@ -1,0 +1,127 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > RegexProcessResponse</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.regexflow.backend.Dto</a>
+</div>
+
+<h1>Coverage Summary for Class: RegexProcessResponse (com.regexflow.backend.Dto)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">RegexProcessResponse</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.regexflow.backend.Dto;
+&nbsp;
+&nbsp;import lombok.Data;
+&nbsp;
+&nbsp;@Data
+&nbsp;public class RegexProcessResponse {
+&nbsp;
+&nbsp;    // Basic Transaction Fields
+&nbsp;    private FieldResult bankAcId = new FieldResult(null, -1);
+&nbsp;    private FieldResult amount = new FieldResult(null, -1);
+&nbsp;    private FieldResult amountNegative = new FieldResult(null, -1);
+&nbsp;    private FieldResult date = new FieldResult(null, -1);
+&nbsp;    private FieldResult merchant = new FieldResult(null, -1);
+&nbsp;    private FieldResult txnNote = new FieldResult(null, -1);
+&nbsp;    private FieldResult balance = new FieldResult(null, -1);
+&nbsp;    private FieldResult balanceNegative = new FieldResult(null, -1);
+&nbsp;
+&nbsp;    // Sender/Receiver Details
+&nbsp;    private FieldResult senderName = new FieldResult(null, -1);
+&nbsp;    private FieldResult sBank = new FieldResult(null, -1);
+&nbsp;    private FieldResult sAcType = new FieldResult(null, -1);
+&nbsp;    private FieldResult sAcId = new FieldResult(null, -1);
+&nbsp;    private FieldResult receiverName = new FieldResult(null, -1);
+&nbsp;    private FieldResult rBank = new FieldResult(null, -1);
+&nbsp;
+&nbsp;    // General Information
+&nbsp;    private FieldResult availLimit = new FieldResult(null, -1);
+&nbsp;    private FieldResult creditLimit = new FieldResult(null, -1);
+&nbsp;    private FieldResult paymentType = new FieldResult(null, -1);
+&nbsp;    private FieldResult city = new FieldResult(null, -1);
+&nbsp;
+&nbsp;    // Biller Details
+&nbsp;    private FieldResult billerAcId = new FieldResult(null, -1);
+&nbsp;    private FieldResult billId = new FieldResult(null, -1);
+&nbsp;    private FieldResult billDate = new FieldResult(null, -1);
+&nbsp;    private FieldResult billPeriod = new FieldResult(null, -1);
+&nbsp;    private FieldResult dueDate = new FieldResult(null, -1);
+&nbsp;    private FieldResult minAmtDue = new FieldResult(null, -1);
+&nbsp;    private FieldResult totAmtDue = new FieldResult(null, -1);
+&nbsp;
+&nbsp;    // FD Details (Fixed Deposit)
+&nbsp;    private FieldResult principalAmount = new FieldResult(null, -1);
+&nbsp;    private FieldResult frequency = new FieldResult(null, -1);
+&nbsp;    private FieldResult maturityDate = new FieldResult(null, -1);
+&nbsp;    private FieldResult maturityAmount = new FieldResult(null, -1);
+&nbsp;    private FieldResult rateOfInterest = new FieldResult(null, -1);
+&nbsp;
+&nbsp;    // MF Details (Mutual Fund)
+&nbsp;    private FieldResult mfNav = new FieldResult(null, -1);
+&nbsp;    private FieldResult mfUnits = new FieldResult(null, -1);
+&nbsp;    private FieldResult mfArn = new FieldResult(null, -1);
+&nbsp;    private FieldResult mfBalUnits = new FieldResult(null, -1);
+&nbsp;    private FieldResult mfSchemeBal = new FieldResult(null, -1);
+&nbsp;
+&nbsp;    // Order Details
+&nbsp;    private FieldResult amountPaid = new FieldResult(null, -1);
+&nbsp;    private FieldResult offerAmount = new FieldResult(null, -1);
+&nbsp;    private FieldResult minPurchaseAmt = new FieldResult(null, -1);
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-01-30 13:57</div>
+</div>
+</body>
+</html>

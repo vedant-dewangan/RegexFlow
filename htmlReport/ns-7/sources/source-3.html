@@ -1,0 +1,269 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > CheckerService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.regexflow.backend.Service</a>
+</div>
+
+<h1>Coverage Summary for Class: CheckerService (com.regexflow.backend.Service)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CheckerService</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/55)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.regexflow.backend.Service;
+&nbsp;
+&nbsp;import com.regexflow.backend.Dto.RegexTemplateDto;
+&nbsp;import com.regexflow.backend.Entity.AuditLog;
+&nbsp;import com.regexflow.backend.Entity.RegexTemplate;
+&nbsp;import com.regexflow.backend.Entity.Users;
+&nbsp;import com.regexflow.backend.Enums.AuditStatus;
+&nbsp;import com.regexflow.backend.Enums.RegexTemplateStatus;
+&nbsp;import com.regexflow.backend.Mapper.RegexTemplateMapper;
+&nbsp;import com.regexflow.backend.Repository.AuditLogRepository;
+&nbsp;import com.regexflow.backend.Repository.RegexTemplateRepository;
+&nbsp;import com.regexflow.backend.Repository.UserRepository;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import org.springframework.transaction.annotation.Transactional;
+&nbsp;
+&nbsp;import java.time.LocalDateTime;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;@Service
+&nbsp;public class CheckerService {
+&nbsp;    private final RegexTemplateRepository regexTemplateRepository;
+&nbsp;    private final UserRepository userRepository;
+&nbsp;    private final AuditLogRepository auditLogRepository;
+&nbsp;
+&nbsp;    public CheckerService(
+&nbsp;            RegexTemplateRepository regexTemplateRepository,
+&nbsp;            UserRepository userRepository,
+<b class="nc">&nbsp;            AuditLogRepository auditLogRepository) {</b>
+<b class="nc">&nbsp;        this.regexTemplateRepository = regexTemplateRepository;</b>
+<b class="nc">&nbsp;        this.userRepository = userRepository;</b>
+<b class="nc">&nbsp;        this.auditLogRepository = auditLogRepository;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Get all templates with PENDING status that need review
+&nbsp;     */
+&nbsp;    public List&lt;RegexTemplateDto&gt; getPendingTemplates() {
+<b class="nc">&nbsp;        return regexTemplateRepository.findByStatus(RegexTemplateStatus.PENDING)</b>
+<b class="nc">&nbsp;            .stream()</b>
+<b class="nc">&nbsp;            .map(RegexTemplateMapper::toDto)</b>
+<b class="nc">&nbsp;            .toList();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Approve a template - changes status from PENDING to VERIFIED
+&nbsp;     * and creates an audit log with APPROVED status
+&nbsp;     */
+&nbsp;    @Transactional
+&nbsp;    public RegexTemplateDto approveTemplate(Long templateId, Long checkerId) {
+&nbsp;        // Fetch the template
+<b class="nc">&nbsp;        RegexTemplate template = regexTemplateRepository.findById(templateId)</b>
+<b class="nc">&nbsp;            .orElseThrow(() -&gt; new RuntimeException(&quot;Template not found with id: &quot; + templateId));</b>
+&nbsp;
+&nbsp;        // Verify the template is in PENDING status
+<b class="nc">&nbsp;        if (template.getStatus() != RegexTemplateStatus.PENDING) {</b>
+<b class="nc">&nbsp;            throw new RuntimeException(&quot;Only PENDING templates can be approved. Current status: &quot; + template.getStatus());</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Fetch the checker user
+<b class="nc">&nbsp;        Users checker = userRepository.findById(checkerId)</b>
+<b class="nc">&nbsp;            .orElseThrow(() -&gt; new RuntimeException(&quot;Checker not found with id: &quot; + checkerId));</b>
+&nbsp;
+&nbsp;        // Update template status to VERIFIED
+<b class="nc">&nbsp;        template.setStatus(RegexTemplateStatus.VERIFIED);</b>
+<b class="nc">&nbsp;        RegexTemplate savedTemplate = regexTemplateRepository.save(template);</b>
+&nbsp;
+&nbsp;        // Check if audit log already exists for this template
+<b class="nc">&nbsp;        Optional&lt;AuditLog&gt; existingAuditLogOpt = auditLogRepository.findByTemplate(savedTemplate);</b>
+&nbsp;        
+&nbsp;        AuditLog auditLog;
+<b class="nc">&nbsp;        if (existingAuditLogOpt.isPresent()) {</b>
+&nbsp;            // Update existing audit log
+<b class="nc">&nbsp;            auditLog = existingAuditLogOpt.get();</b>
+<b class="nc">&nbsp;            auditLog.setStatus(AuditStatus.APPROVED);</b>
+<b class="nc">&nbsp;            auditLog.setVerifiedBy(checker);</b>
+<b class="nc">&nbsp;            auditLog.setVerifiedAt(LocalDateTime.now());</b>
+&nbsp;        } else {
+&nbsp;            // Create new audit log for approval
+<b class="nc">&nbsp;            auditLog = new AuditLog();</b>
+<b class="nc">&nbsp;            auditLog.setTemplate(savedTemplate);</b>
+<b class="nc">&nbsp;            auditLog.setVerifiedBy(checker);</b>
+<b class="nc">&nbsp;            auditLog.setStatus(AuditStatus.APPROVED);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        auditLogRepository.save(auditLog);</b>
+&nbsp;
+<b class="nc">&nbsp;        return RegexTemplateMapper.toDto(savedTemplate);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Reject a template - changes status from PENDING back to DRAFT
+&nbsp;     * and creates an audit log with REJECTED status
+&nbsp;     */
+&nbsp;    @Transactional
+&nbsp;    public RegexTemplateDto rejectTemplate(Long templateId, Long checkerId) {
+&nbsp;        // Fetch the template
+<b class="nc">&nbsp;        RegexTemplate template = regexTemplateRepository.findById(templateId)</b>
+<b class="nc">&nbsp;            .orElseThrow(() -&gt; new RuntimeException(&quot;Template not found with id: &quot; + templateId));</b>
+&nbsp;
+&nbsp;        // Verify the template is in PENDING status
+<b class="nc">&nbsp;        if (template.getStatus() != RegexTemplateStatus.PENDING) {</b>
+<b class="nc">&nbsp;            throw new RuntimeException(&quot;Only PENDING templates can be rejected. Current status: &quot; + template.getStatus());</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Fetch the checker user
+<b class="nc">&nbsp;        Users checker = userRepository.findById(checkerId)</b>
+<b class="nc">&nbsp;            .orElseThrow(() -&gt; new RuntimeException(&quot;Checker not found with id: &quot; + checkerId));</b>
+&nbsp;
+&nbsp;        // Update template status back to DRAFT so maker can revise it
+<b class="nc">&nbsp;        template.setStatus(RegexTemplateStatus.DRAFT);</b>
+<b class="nc">&nbsp;        RegexTemplate savedTemplate = regexTemplateRepository.save(template);</b>
+&nbsp;
+&nbsp;        // Check if audit log already exists for this template
+<b class="nc">&nbsp;        Optional&lt;AuditLog&gt; existingAuditLogOpt = auditLogRepository.findByTemplate(savedTemplate);</b>
+&nbsp;        
+&nbsp;        AuditLog auditLog;
+<b class="nc">&nbsp;        if (existingAuditLogOpt.isPresent()) {</b>
+&nbsp;            // Update existing audit log
+<b class="nc">&nbsp;            auditLog = existingAuditLogOpt.get();</b>
+<b class="nc">&nbsp;            auditLog.setStatus(AuditStatus.REJECTED);</b>
+<b class="nc">&nbsp;            auditLog.setVerifiedBy(checker);</b>
+<b class="nc">&nbsp;            auditLog.setVerifiedAt(LocalDateTime.now());</b>
+&nbsp;        } else {
+&nbsp;            // Create new audit log for rejection
+<b class="nc">&nbsp;            auditLog = new AuditLog();</b>
+<b class="nc">&nbsp;            auditLog.setTemplate(savedTemplate);</b>
+<b class="nc">&nbsp;            auditLog.setVerifiedBy(checker);</b>
+<b class="nc">&nbsp;            auditLog.setStatus(AuditStatus.REJECTED);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        auditLogRepository.save(auditLog);</b>
+&nbsp;
+<b class="nc">&nbsp;        return RegexTemplateMapper.toDto(savedTemplate);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Get all verified templates
+&nbsp;     */
+&nbsp;    public List&lt;RegexTemplateDto&gt; getVerifiedTemplates() {
+<b class="nc">&nbsp;        return regexTemplateRepository.findByStatus(RegexTemplateStatus.VERIFIED)</b>
+<b class="nc">&nbsp;            .stream()</b>
+<b class="nc">&nbsp;            .map(RegexTemplateMapper::toDto)</b>
+<b class="nc">&nbsp;            .toList();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Get a specific template by ID (for review details)
+&nbsp;     */
+&nbsp;    public RegexTemplateDto getTemplateById(Long templateId) {
+<b class="nc">&nbsp;        RegexTemplate template = regexTemplateRepository.findById(templateId)</b>
+<b class="nc">&nbsp;            .orElseThrow(() -&gt; new RuntimeException(&quot;Template not found with id: &quot; + templateId));</b>
+<b class="nc">&nbsp;        return RegexTemplateMapper.toDto(template);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-01-30 13:57</div>
+</div>
+</body>
+</html>

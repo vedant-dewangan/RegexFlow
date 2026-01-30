@@ -1,0 +1,206 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AuthController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.regexflow.backend.Controller</a>
+</div>
+
+<h1>Coverage Summary for Class: AuthController (com.regexflow.backend.Controller)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AuthController</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/20)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.regexflow.backend.Controller;
+&nbsp;
+&nbsp;import com.regexflow.backend.Dto.LoginRequest;
+&nbsp;import com.regexflow.backend.Dto.LoginResponse;
+&nbsp;import com.regexflow.backend.Dto.RegisterRequest;
+&nbsp;import com.regexflow.backend.Service.AuthService;
+&nbsp;import jakarta.servlet.http.HttpSession;
+&nbsp;import jakarta.validation.Valid;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.http.HttpStatus;
+&nbsp;import org.springframework.http.ResponseEntity;
+&nbsp;import org.springframework.web.bind.MethodArgumentNotValidException;
+&nbsp;import org.springframework.web.bind.annotation.*;
+&nbsp;
+&nbsp;/**
+&nbsp; * REST Controller for Authentication endpoints
+&nbsp; * Base path: /auth (all endpoints start with /auth)
+&nbsp; */
+&nbsp;@RestController
+&nbsp;@RequestMapping(&quot;/auth&quot;)
+<b class="nc">&nbsp;public class AuthController {</b>
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    private AuthService authService;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * ENDPOINT: POST /auth/login
+&nbsp;     * @PostMapping(&quot;/login&quot;) = This handles POST requests to /auth/login
+&nbsp;     * @RequestBody LoginRequest = Expects JSON: {&quot;email&quot;: &quot;...&quot;, &quot;password&quot;: &quot;...&quot;}
+&nbsp;     * 
+&nbsp;     * Example request:
+&nbsp;     * POST http://localhost:8080/auth/login
+&nbsp;     * Body: {&quot;email&quot;: &quot;user@example.com&quot;, &quot;password&quot;: &quot;mypassword&quot;}
+&nbsp;     */
+&nbsp;    @PostMapping(&quot;/login&quot;)
+&nbsp;    public ResponseEntity&lt;LoginResponse&gt; login(
+&nbsp;            @Valid @RequestBody LoginRequest request,  // Gets email &amp; password from JSON body
+&nbsp;            HttpSession session) {  // Spring automatically provides the session
+&nbsp;        try {
+<b class="nc">&nbsp;            LoginResponse response = authService.login(request, session);</b>
+<b class="nc">&nbsp;            return ResponseEntity.ok(response);</b>
+&nbsp;        } catch (RuntimeException e) {
+<b class="nc">&nbsp;            LoginResponse errorResponse = new LoginResponse();</b>
+<b class="nc">&nbsp;            errorResponse.setMessage(&quot;Login failed: &quot; + e.getMessage());</b>
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * ENDPOINT: POST /auth/register
+&nbsp;     * @PostMapping(&quot;/register&quot;) = This handles POST requests to /auth/register
+&nbsp;     * 
+&nbsp;     * Example request:
+&nbsp;     * POST http://localhost:8080/auth/register
+&nbsp;     * Body: {&quot;name&quot;: &quot;John Doe&quot;, &quot;email&quot;: &quot;john@example.com&quot;, &quot;password&quot;: &quot;pass123&quot;}
+&nbsp;     */
+&nbsp;    @PostMapping(&quot;/register&quot;)
+&nbsp;    public ResponseEntity&lt;LoginResponse&gt; register(
+&nbsp;            @Valid @RequestBody RegisterRequest request,  // Gets name, email, password from JSON
+&nbsp;            HttpSession session) {
+&nbsp;        try {
+<b class="nc">&nbsp;            LoginResponse response = authService.register(request, session);</b>
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.CREATED).body(response);</b>
+&nbsp;        } catch (RuntimeException e) {
+<b class="nc">&nbsp;            LoginResponse errorResponse = new LoginResponse();</b>
+<b class="nc">&nbsp;            errorResponse.setMessage(&quot;Registration failed: &quot; + e.getMessage());</b>
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Exception handler for validation errors
+&nbsp;     */
+&nbsp;    @ExceptionHandler(MethodArgumentNotValidException.class)
+&nbsp;    public ResponseEntity&lt;LoginResponse&gt; handleValidationExceptions(
+&nbsp;            MethodArgumentNotValidException ex) {
+<b class="nc">&nbsp;        StringBuilder errorMessage = new StringBuilder();</b>
+<b class="nc">&nbsp;        ex.getBindingResult().getAllErrors().forEach((error) -&gt; {</b>
+<b class="nc">&nbsp;            String message = error.getDefaultMessage();</b>
+<b class="nc">&nbsp;            if (errorMessage.length() &gt; 0) {</b>
+<b class="nc">&nbsp;                errorMessage.append(&quot;, &quot;);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            errorMessage.append(message);</b>
+&nbsp;        });
+&nbsp;        
+<b class="nc">&nbsp;        LoginResponse errorResponse = new LoginResponse();</b>
+<b class="nc">&nbsp;        errorResponse.setMessage(errorMessage.toString());</b>
+<b class="nc">&nbsp;        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-01-30 13:57</div>
+</div>
+</body>
+</html>

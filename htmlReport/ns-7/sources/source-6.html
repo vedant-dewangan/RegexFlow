@@ -1,0 +1,489 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SmsService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.regexflow.backend.Service</a>
+</div>
+
+<h1>Coverage Summary for Class: SmsService (com.regexflow.backend.Service)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SmsService</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (10/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.3%
+  </span>
+  <span class="absValue">
+    (41/110)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    82.6%
+  </span>
+  <span class="absValue">
+    (166/201)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.regexflow.backend.Service;
+&nbsp;
+&nbsp;import com.fasterxml.jackson.core.JsonProcessingException;
+&nbsp;import com.fasterxml.jackson.databind.ObjectMapper;
+&nbsp;import com.regexflow.backend.Dto.*;
+&nbsp;import com.regexflow.backend.Entity.RegexTemplate;
+&nbsp;import com.regexflow.backend.Entity.Sms;
+&nbsp;import com.regexflow.backend.Entity.TemplateRequestNotification;
+&nbsp;import com.regexflow.backend.Entity.Users;
+&nbsp;import com.regexflow.backend.Enums.NotificationStatus;
+&nbsp;import com.regexflow.backend.Enums.RegexTemplateStatus;
+&nbsp;import com.regexflow.backend.Repository.RegexTemplateRepository;
+&nbsp;import com.regexflow.backend.Repository.SmsRepository;
+&nbsp;import com.regexflow.backend.Repository.TemplateRequestNotificationRepository;
+&nbsp;import com.regexflow.backend.Repository.UserRepository;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import org.springframework.transaction.annotation.Transactional;
+&nbsp;
+&nbsp;import java.lang.reflect.Field;
+&nbsp;import java.util.*;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;
+&nbsp;@Service
+&nbsp;public class SmsService {
+&nbsp;    private final SmsRepository smsRepository;
+&nbsp;    private final RegexTemplateRepository regexTemplateRepository;
+&nbsp;    private final TemplateRequestNotificationRepository notificationRepository;
+&nbsp;    private final UserRepository userRepository;
+&nbsp;    private final RegexProcessService regexProcessService;
+&nbsp;    private final ObjectMapper objectMapper;
+&nbsp;
+&nbsp;    public SmsService(
+&nbsp;            SmsRepository smsRepository,
+&nbsp;            RegexTemplateRepository regexTemplateRepository,
+&nbsp;            TemplateRequestNotificationRepository notificationRepository,
+&nbsp;            UserRepository userRepository,
+&nbsp;            RegexProcessService regexProcessService,
+<b class="fc">&nbsp;            ObjectMapper objectMapper) {</b>
+<b class="fc">&nbsp;        this.smsRepository = smsRepository;</b>
+<b class="fc">&nbsp;        this.regexTemplateRepository = regexTemplateRepository;</b>
+<b class="fc">&nbsp;        this.notificationRepository = notificationRepository;</b>
+<b class="fc">&nbsp;        this.userRepository = userRepository;</b>
+<b class="fc">&nbsp;        this.regexProcessService = regexProcessService;</b>
+<b class="fc">&nbsp;        this.objectMapper = objectMapper;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Transactional
+&nbsp;    public SmsSubmissionResponse processSms(String smsText, Long userId) {
+&nbsp;        // Extract sender header (text before first colon)
+<b class="fc">&nbsp;        String senderHeader = extractSenderHeader(smsText);</b>
+&nbsp;        
+&nbsp;        // Find user
+<b class="fc">&nbsp;        Users user = userRepository.findById(userId)</b>
+<b class="fc">&nbsp;            .orElseThrow(() -&gt; new RuntimeException(&quot;User not found with id: &quot; + userId));</b>
+&nbsp;        
+&nbsp;        // Find all VERIFIED templates with matching sender header
+<b class="fc">&nbsp;        List&lt;RegexTemplate&gt; templates = regexTemplateRepository.findBySenderHeaderAndStatus(</b>
+&nbsp;            senderHeader, RegexTemplateStatus.VERIFIED);
+&nbsp;        
+<b class="fc">&nbsp;        Sms sms = new Sms();</b>
+<b class="fc">&nbsp;        sms.setSmsText(smsText);</b>
+<b class="fc">&nbsp;        sms.setSenderHeader(senderHeader);</b>
+<b class="fc">&nbsp;        sms.setUser(user);</b>
+&nbsp;        
+<b class="fc">&nbsp;        SmsSubmissionResponse response = new SmsSubmissionResponse();</b>
+&nbsp;        
+<b class="fc">&nbsp;        if (templates.isEmpty()) {</b>
+&nbsp;            // No templates found - store SMS without template and create notification
+<b class="fc">&nbsp;            Sms savedSms = smsRepository.save(sms);</b>
+&nbsp;            
+&nbsp;            // Create notification for makers
+<b class="fc">&nbsp;            TemplateRequestNotification notification = new TemplateRequestNotification();</b>
+<b class="fc">&nbsp;            notification.setSms(savedSms);</b>
+<b class="fc">&nbsp;            notification.setSmsText(smsText);</b>
+<b class="fc">&nbsp;            notification.setSenderHeader(senderHeader);</b>
+<b class="fc">&nbsp;            notification.setRequestedBy(user);</b>
+<b class="fc">&nbsp;            notification.setStatus(NotificationStatus.PENDING);</b>
+<b class="fc">&nbsp;            notificationRepository.save(notification);</b>
+&nbsp;            
+<b class="fc">&nbsp;            response.setSmsId(savedSms.getSmsId());</b>
+<b class="fc">&nbsp;            response.setSmsText(savedSms.getSmsText());</b>
+<b class="fc">&nbsp;            response.setHasMatch(false);</b>
+<b class="fc">&nbsp;            response.setMessage(&quot;No available template for sender: &quot; + senderHeader + &quot;. Maker has been notified.&quot;);</b>
+<b class="fc">&nbsp;            response.setCreatedAt(savedSms.getCreatedAt());</b>
+<b class="fc">&nbsp;            return response;</b>
+&nbsp;        }
+&nbsp;        
+&nbsp;        // Try each template pattern against SMS and find best match
+<b class="fc">&nbsp;        RegexTemplate bestTemplate = null;</b>
+<b class="fc">&nbsp;        RegexProcessResponse bestMatchResponse = null;</b>
+<b class="fc">&nbsp;        int maxFieldsCount = 0;</b>
+&nbsp;        
+<b class="fc">&nbsp;        for (RegexTemplate template : templates) {</b>
+&nbsp;            try {
+<b class="fc">&nbsp;                RegexProcessRequest request = new RegexProcessRequest();</b>
+<b class="fc">&nbsp;                request.setRegexPattern(template.getPattern());</b>
+<b class="fc">&nbsp;                request.setRawMsg(smsText);</b>
+<b class="fc">&nbsp;                request.setSmsType(template.getSmsType());</b>
+<b class="fc">&nbsp;                request.setPaymentType(template.getPaymentType());</b>
+<b class="fc">&nbsp;                request.setTransactionType(template.getTransactionType());</b>
+&nbsp;                
+<b class="fc">&nbsp;                RegexProcessResponse matchResponse = regexProcessService.processRegex(request);</b>
+&nbsp;                
+&nbsp;                // Count non-null extracted fields
+<b class="fc">&nbsp;                int fieldsCount = countExtractedFields(matchResponse);</b>
+&nbsp;                
+<b class="fc">&nbsp;                if (fieldsCount &gt; maxFieldsCount) {</b>
+<b class="fc">&nbsp;                    maxFieldsCount = fieldsCount;</b>
+<b class="fc">&nbsp;                    bestTemplate = template;</b>
+<b class="fc">&nbsp;                    bestMatchResponse = matchResponse;</b>
+&nbsp;                }
+&nbsp;            } catch (Exception e) {
+&nbsp;                // Skip this template if pattern matching fails
+&nbsp;                continue;
+&nbsp;            }
+&nbsp;        }
+&nbsp;        
+<b class="pc">&nbsp;        if (bestTemplate == null || maxFieldsCount == 0) {</b>
+&nbsp;            // No template matched - store SMS without template and create notification
+<b class="fc">&nbsp;            Sms savedSms = smsRepository.save(sms);</b>
+&nbsp;            
+&nbsp;            // Create notification for makers
+<b class="fc">&nbsp;            TemplateRequestNotification notification = new TemplateRequestNotification();</b>
+<b class="fc">&nbsp;            notification.setSms(savedSms);</b>
+<b class="fc">&nbsp;            notification.setSmsText(smsText);</b>
+<b class="fc">&nbsp;            notification.setSenderHeader(senderHeader);</b>
+<b class="fc">&nbsp;            notification.setRequestedBy(user);</b>
+<b class="fc">&nbsp;            notification.setStatus(NotificationStatus.PENDING);</b>
+<b class="fc">&nbsp;            notificationRepository.save(notification);</b>
+&nbsp;            
+<b class="fc">&nbsp;            response.setSmsId(savedSms.getSmsId());</b>
+<b class="fc">&nbsp;            response.setSmsText(savedSms.getSmsText());</b>
+<b class="fc">&nbsp;            response.setHasMatch(false);</b>
+<b class="fc">&nbsp;            response.setMessage(&quot;No template matched the SMS pattern. Maker has been notified.&quot;);</b>
+<b class="fc">&nbsp;            response.setCreatedAt(savedSms.getCreatedAt());</b>
+<b class="fc">&nbsp;            return response;</b>
+&nbsp;        }
+&nbsp;        
+&nbsp;        // Store SMS with matched template
+<b class="fc">&nbsp;        sms.setMatchedTemplate(bestTemplate);</b>
+&nbsp;        
+&nbsp;        // Convert RegexProcessResponse to ExtractedFieldsDto
+<b class="fc">&nbsp;        ExtractedFieldsDto extractedFields = convertToExtractedFieldsDto(bestMatchResponse, smsText, bestTemplate.getSmsType());</b>
+&nbsp;        
+&nbsp;        // Store extracted fields as JSON
+&nbsp;        try {
+<b class="fc">&nbsp;            String extractedFieldsJson = objectMapper.writeValueAsString(extractedFields.getFields());</b>
+<b class="fc">&nbsp;            sms.setExtractedFields(extractedFieldsJson);</b>
+&nbsp;        } catch (JsonProcessingException e) {
+&nbsp;            // If JSON conversion fails, store empty JSON
+<b class="nc">&nbsp;            sms.setExtractedFields(&quot;{}&quot;);</b>
+&nbsp;        }
+&nbsp;        
+<b class="fc">&nbsp;        Sms savedSms = smsRepository.save(sms);</b>
+&nbsp;        
+<b class="fc">&nbsp;        response.setSmsId(savedSms.getSmsId());</b>
+<b class="fc">&nbsp;        response.setSmsText(savedSms.getSmsText());</b>
+<b class="fc">&nbsp;        response.setHasMatch(true);</b>
+<b class="fc">&nbsp;        response.setMatchedTemplateId(bestTemplate.getTemplateId());</b>
+<b class="fc">&nbsp;        response.setMatchedTemplateSenderHeader(bestTemplate.getSenderHeader());</b>
+<b class="fc">&nbsp;        response.setExtractedFields(extractedFields);</b>
+<b class="fc">&nbsp;        response.setMessage(&quot;Template matched successfully&quot;);</b>
+<b class="fc">&nbsp;        response.setCreatedAt(savedSms.getCreatedAt());</b>
+&nbsp;        
+<b class="fc">&nbsp;        return response;</b>
+&nbsp;    }
+&nbsp;    
+&nbsp;    public List&lt;SmsSubmissionResponse&gt; getSmsHistory(Long userId) {
+<b class="fc">&nbsp;        Users user = userRepository.findById(userId)</b>
+<b class="fc">&nbsp;            .orElseThrow(() -&gt; new RuntimeException(&quot;User not found with id: &quot; + userId));</b>
+&nbsp;        
+<b class="fc">&nbsp;        List&lt;Sms&gt; smsList = smsRepository.findByUserOrderByCreatedAtDesc(user);</b>
+&nbsp;        
+<b class="fc">&nbsp;        return smsList.stream().map(sms -&gt; {</b>
+<b class="fc">&nbsp;            SmsSubmissionResponse response = new SmsSubmissionResponse();</b>
+<b class="fc">&nbsp;            response.setSmsId(sms.getSmsId());</b>
+<b class="fc">&nbsp;            response.setSmsText(sms.getSmsText());</b>
+<b class="fc">&nbsp;            response.setHasMatch(sms.getMatchedTemplate() != null);</b>
+<b class="fc">&nbsp;            response.setCreatedAt(sms.getCreatedAt());</b>
+&nbsp;            
+<b class="fc">&nbsp;            if (sms.getMatchedTemplate() != null) {</b>
+<b class="fc">&nbsp;                response.setMatchedTemplateId(sms.getMatchedTemplate().getTemplateId());</b>
+<b class="fc">&nbsp;                response.setMatchedTemplateSenderHeader(sms.getMatchedTemplate().getSenderHeader());</b>
+&nbsp;                
+&nbsp;                // Parse extracted fields from JSON
+<b class="pc">&nbsp;                if (sms.getExtractedFields() != null &amp;&amp; !sms.getExtractedFields().isEmpty()) {</b>
+&nbsp;                    try {
+<b class="fc">&nbsp;                        Map&lt;String, String&gt; fieldsMap = objectMapper.readValue(</b>
+<b class="fc">&nbsp;                            sms.getExtractedFields(), </b>
+<b class="fc">&nbsp;                            objectMapper.getTypeFactory().constructMapType(Map.class, String.class, String.class)</b>
+&nbsp;                        );
+<b class="fc">&nbsp;                        ExtractedFieldsDto extractedFields = new ExtractedFieldsDto();</b>
+<b class="fc">&nbsp;                        extractedFields.setFields(fieldsMap);</b>
+<b class="fc">&nbsp;                        extractedFields.setAmount(fieldsMap.get(&quot;amount&quot;));</b>
+<b class="fc">&nbsp;                        extractedFields.setDate(fieldsMap.get(&quot;date&quot;));</b>
+<b class="fc">&nbsp;                        extractedFields.setMerchant(fieldsMap.get(&quot;merchant&quot;));</b>
+<b class="fc">&nbsp;                        extractedFields.setBalance(fieldsMap.get(&quot;balance&quot;));</b>
+&nbsp;                        
+&nbsp;                        // Set smsType from the matched template (most reliable)
+<b class="pc">&nbsp;                        if (sms.getMatchedTemplate().getSmsType() != null) {</b>
+<b class="fc">&nbsp;                            extractedFields.setSmsType(sms.getMatchedTemplate().getSmsType().name());</b>
+<b class="fc">&nbsp;                            extractedFields.setTransactionType(sms.getMatchedTemplate().getSmsType().name());</b>
+&nbsp;                        }
+&nbsp;                        
+<b class="fc">&nbsp;                        response.setExtractedFields(extractedFields);</b>
+&nbsp;                    } catch (JsonProcessingException e) {
+&nbsp;                        // If parsing fails, set empty extracted fields
+<b class="fc">&nbsp;                        response.setExtractedFields(new ExtractedFieldsDto());</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;            
+<b class="fc">&nbsp;            return response;</b>
+<b class="fc">&nbsp;        }).collect(Collectors.toList());</b>
+&nbsp;    }
+&nbsp;    
+&nbsp;    private String extractSenderHeader(String smsText) {
+<b class="pc">&nbsp;        if (smsText == null || smsText.isEmpty()) {</b>
+<b class="fc">&nbsp;            return &quot;&quot;;</b>
+&nbsp;        }
+&nbsp;        
+<b class="fc">&nbsp;        int colonIndex = smsText.indexOf(&#39;:&#39;);</b>
+<b class="fc">&nbsp;        if (colonIndex &gt; 0) {</b>
+<b class="fc">&nbsp;            return smsText.substring(0, colonIndex).trim();</b>
+&nbsp;        }
+&nbsp;        
+&nbsp;        // If no colon found, return first word or empty string
+<b class="fc">&nbsp;        String[] words = smsText.trim().split(&quot;\\s+&quot;);</b>
+<b class="pc">&nbsp;        return words.length &gt; 0 ? words[0] : &quot;&quot;;</b>
+&nbsp;    }
+&nbsp;    
+&nbsp;    private int countExtractedFields(RegexProcessResponse response) {
+<b class="fc">&nbsp;        int count = 0;</b>
+&nbsp;        try {
+<b class="fc">&nbsp;            Field[] fields = RegexProcessResponse.class.getDeclaredFields();</b>
+<b class="fc">&nbsp;            for (Field field : fields) {</b>
+<b class="fc">&nbsp;                field.setAccessible(true);</b>
+<b class="fc">&nbsp;                Object value = field.get(response);</b>
+<b class="pc">&nbsp;                if (value instanceof FieldResult) {</b>
+<b class="fc">&nbsp;                    FieldResult fieldResult = (FieldResult) value;</b>
+<b class="pc">&nbsp;                    if (fieldResult.getValue() != null &amp;&amp; fieldResult.getIndex() &gt;= 0) {</b>
+<b class="fc">&nbsp;                        count++;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        } catch (Exception e) {
+&nbsp;            // If reflection fails, return 0
+<b class="nc">&nbsp;            return 0;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return count;</b>
+&nbsp;    }
+&nbsp;    
+&nbsp;    public List&lt;TemplateRequestNotificationDto&gt; getPendingNotifications() {
+<b class="fc">&nbsp;        List&lt;TemplateRequestNotification&gt; notifications = notificationRepository</b>
+<b class="fc">&nbsp;            .findByStatusOrderByCreatedAtDesc(NotificationStatus.PENDING);</b>
+&nbsp;        
+<b class="fc">&nbsp;        return notifications.stream().map(notification -&gt; {</b>
+<b class="fc">&nbsp;            TemplateRequestNotificationDto dto = new TemplateRequestNotificationDto();</b>
+<b class="fc">&nbsp;            dto.setNotificationId(notification.getNotificationId());</b>
+<b class="fc">&nbsp;            dto.setSmsId(notification.getSms().getSmsId());</b>
+<b class="fc">&nbsp;            dto.setSmsText(notification.getSmsText());</b>
+<b class="fc">&nbsp;            dto.setSenderHeader(notification.getSenderHeader());</b>
+<b class="fc">&nbsp;            dto.setRequestedById(notification.getRequestedBy().getUId());</b>
+<b class="fc">&nbsp;            dto.setRequestedByName(notification.getRequestedBy().getName());</b>
+<b class="fc">&nbsp;            dto.setStatus(notification.getStatus());</b>
+<b class="fc">&nbsp;            dto.setCreatedAt(notification.getCreatedAt());</b>
+<b class="fc">&nbsp;            dto.setResolvedAt(notification.getResolvedAt());</b>
+<b class="fc">&nbsp;            return dto;</b>
+<b class="fc">&nbsp;        }).collect(Collectors.toList());</b>
+&nbsp;    }
+&nbsp;    
+&nbsp;    @Transactional
+&nbsp;    public void markNotificationAsResolved(Long notificationId) {
+<b class="fc">&nbsp;        TemplateRequestNotification notification = notificationRepository.findById(notificationId)</b>
+<b class="fc">&nbsp;            .orElseThrow(() -&gt; new RuntimeException(&quot;Notification not found with id: &quot; + notificationId));</b>
+&nbsp;        
+<b class="fc">&nbsp;        notification.setStatus(NotificationStatus.RESOLVED);</b>
+<b class="fc">&nbsp;        notification.setResolvedAt(java.time.LocalDateTime.now());</b>
+<b class="fc">&nbsp;        notificationRepository.save(notification);</b>
+&nbsp;    }
+&nbsp;    
+&nbsp;    private ExtractedFieldsDto convertToExtractedFieldsDto(RegexProcessResponse response, String smsText, com.regexflow.backend.Enums.SmsType templateSmsType) {
+<b class="fc">&nbsp;        ExtractedFieldsDto dto = new ExtractedFieldsDto();</b>
+<b class="fc">&nbsp;        Map&lt;String, String&gt; fieldsMap = new HashMap&lt;&gt;();</b>
+&nbsp;        
+&nbsp;        try {
+<b class="fc">&nbsp;            Field[] fields = RegexProcessResponse.class.getDeclaredFields();</b>
+<b class="fc">&nbsp;            for (Field field : fields) {</b>
+<b class="fc">&nbsp;                field.setAccessible(true);</b>
+<b class="fc">&nbsp;                Object value = field.get(response);</b>
+<b class="pc">&nbsp;                if (value instanceof FieldResult) {</b>
+<b class="fc">&nbsp;                    FieldResult fieldResult = (FieldResult) value;</b>
+<b class="pc">&nbsp;                    if (fieldResult.getValue() != null &amp;&amp; fieldResult.getIndex() &gt;= 0) {</b>
+<b class="fc">&nbsp;                        String fieldName = field.getName();</b>
+<b class="fc">&nbsp;                        fieldsMap.put(fieldName, fieldResult.getValue());</b>
+&nbsp;                        
+&nbsp;                        // Set common fields for easy access
+<b class="fc">&nbsp;                        if (&quot;amount&quot;.equals(fieldName)) {</b>
+<b class="fc">&nbsp;                            dto.setAmount(fieldResult.getValue());</b>
+<b class="pc">&nbsp;                        } else if (&quot;date&quot;.equals(fieldName)) {</b>
+<b class="nc">&nbsp;                            dto.setDate(fieldResult.getValue());</b>
+<b class="pc">&nbsp;                        } else if (&quot;merchant&quot;.equals(fieldName)) {</b>
+<b class="nc">&nbsp;                            dto.setMerchant(fieldResult.getValue());</b>
+<b class="pc">&nbsp;                        } else if (&quot;balance&quot;.equals(fieldName)) {</b>
+<b class="fc">&nbsp;                            dto.setBalance(fieldResult.getValue());</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;            
+&nbsp;            // Determine transaction type (DEBIT/CREDIT/LOAN/SERVICE) - prioritize template&#39;s smsType
+<b class="fc">&nbsp;            String transactionType = null;</b>
+&nbsp;            
+&nbsp;            // First, use the template&#39;s smsType if available (most reliable)
+<b class="pc">&nbsp;            if (templateSmsType != null) {</b>
+<b class="fc">&nbsp;                transactionType = templateSmsType.name(); // DEBIT, CREDIT, LOAN, or SERVICE</b>
+&nbsp;            }
+&nbsp;            // Fallback: Check for amountNegative field (indicates debit)
+<b class="nc">&nbsp;            else if (fieldsMap.containsKey(&quot;amountNegative&quot;) &amp;&amp; fieldsMap.get(&quot;amountNegative&quot;) != null) {</b>
+<b class="nc">&nbsp;                transactionType = &quot;DEBIT&quot;;</b>
+&nbsp;            } 
+&nbsp;            // Fallback: Check SMS text for keywords (case-insensitive)
+<b class="nc">&nbsp;            else if (smsText != null &amp;&amp; !smsText.isEmpty()) {</b>
+<b class="nc">&nbsp;                String smsTextLower = smsText.toLowerCase();</b>
+&nbsp;                
+&nbsp;                // Common loan keywords
+<b class="nc">&nbsp;                if (smsTextLower.contains(&quot;loan&quot;) || </b>
+<b class="nc">&nbsp;                    smsTextLower.contains(&quot;emi&quot;) ||</b>
+<b class="nc">&nbsp;                    smsTextLower.contains(&quot;installment&quot;) ||</b>
+<b class="nc">&nbsp;                    smsTextLower.contains(&quot;repayment&quot;) ||</b>
+<b class="nc">&nbsp;                    smsTextLower.contains(&quot;disbursed&quot;) ||</b>
+<b class="nc">&nbsp;                    smsTextLower.contains(&quot;sanctioned&quot;)) {</b>
+<b class="nc">&nbsp;                    transactionType = &quot;LOAN&quot;;</b>
+&nbsp;                }
+&nbsp;                // Common service keywords
+<b class="nc">&nbsp;                else if (smsTextLower.contains(&quot;service&quot;) || </b>
+<b class="nc">&nbsp;                         smsTextLower.contains(&quot;bill&quot;) ||</b>
+<b class="nc">&nbsp;                         smsTextLower.contains(&quot;recharge&quot;) ||</b>
+<b class="nc">&nbsp;                         smsTextLower.contains(&quot;subscription&quot;) ||</b>
+<b class="nc">&nbsp;                         smsTextLower.contains(&quot;payment due&quot;) ||</b>
+<b class="nc">&nbsp;                         smsTextLower.contains(&quot;invoice&quot;)) {</b>
+<b class="nc">&nbsp;                    transactionType = &quot;SERVICE&quot;;</b>
+&nbsp;                }
+&nbsp;                // Common debit keywords
+<b class="nc">&nbsp;                else if (smsTextLower.contains(&quot;debited&quot;) || </b>
+<b class="nc">&nbsp;                    smsTextLower.contains(&quot;withdrawn&quot;) || </b>
+<b class="nc">&nbsp;                    smsTextLower.contains(&quot;spent&quot;) ||</b>
+<b class="nc">&nbsp;                    smsTextLower.contains(&quot;paid&quot;) ||</b>
+<b class="nc">&nbsp;                    smsTextLower.contains(&quot;deducted&quot;) ||</b>
+<b class="nc">&nbsp;                    smsTextLower.contains(&quot;debit&quot;)) {</b>
+<b class="nc">&nbsp;                    transactionType = &quot;DEBIT&quot;;</b>
+&nbsp;                }
+&nbsp;                // Common credit keywords
+<b class="nc">&nbsp;                else if (smsTextLower.contains(&quot;credited&quot;) || </b>
+<b class="nc">&nbsp;                         smsTextLower.contains(&quot;received&quot;) || </b>
+<b class="nc">&nbsp;                         smsTextLower.contains(&quot;deposited&quot;) ||</b>
+<b class="nc">&nbsp;                         smsTextLower.contains(&quot;added&quot;) ||</b>
+<b class="nc">&nbsp;                         smsTextLower.contains(&quot;credit&quot;)) {</b>
+<b class="nc">&nbsp;                    transactionType = &quot;CREDIT&quot;;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;            
+<b class="fc">&nbsp;            dto.setTransactionType(transactionType);</b>
+<b class="pc">&nbsp;            dto.setSmsType(templateSmsType != null ? templateSmsType.name() : transactionType);</b>
+&nbsp;            
+&nbsp;        } catch (Exception e) {
+&nbsp;            // If conversion fails, return empty DTO
+&nbsp;        }
+&nbsp;        
+<b class="fc">&nbsp;        dto.setFields(fieldsMap);</b>
+<b class="fc">&nbsp;        return dto;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-01-30 13:57</div>
+</div>
+</body>
+</html>

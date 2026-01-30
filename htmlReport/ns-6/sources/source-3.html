@@ -1,0 +1,192 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > RegexTemplateMapper</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.regexflow.backend.Mapper</a>
+</div>
+
+<h1>Coverage Summary for Class: RegexTemplateMapper (com.regexflow.backend.Mapper)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">RegexTemplateMapper</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/43)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.regexflow.backend.Mapper;
+&nbsp;
+&nbsp;import com.regexflow.backend.Dto.RegexTemplateDto;
+&nbsp;import com.regexflow.backend.Entity.RegexTemplate;
+&nbsp;import com.regexflow.backend.Entity.Users;
+&nbsp;import com.regexflow.backend.Entity.Bank;
+&nbsp;
+<b class="nc">&nbsp;public class RegexTemplateMapper {</b>
+&nbsp;
+&nbsp;    public static RegexTemplateDto toDto(RegexTemplate template) {
+<b class="nc">&nbsp;        if (template == null) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        RegexTemplateDto dto = new RegexTemplateDto();</b>
+<b class="nc">&nbsp;        dto.setTemplateId(template.getTemplateId());</b>
+<b class="nc">&nbsp;        dto.setSenderHeader(template.getSenderHeader());</b>
+<b class="nc">&nbsp;        dto.setPattern(template.getPattern());</b>
+<b class="nc">&nbsp;        dto.setSampleRawMsg(template.getSampleRawMsg());</b>
+<b class="nc">&nbsp;        dto.setSmsType(template.getSmsType());</b>
+<b class="nc">&nbsp;        dto.setTransactionType(template.getTransactionType());</b>
+<b class="nc">&nbsp;        dto.setStatus(template.getStatus());</b>
+<b class="nc">&nbsp;        dto.setPaymentType(template.getPaymentType());</b>
+<b class="nc">&nbsp;        dto.setCreatedAt(template.getCreatedAt());</b>
+&nbsp;
+<b class="nc">&nbsp;        if (template.getCreatedBy() != null) {</b>
+<b class="nc">&nbsp;            dto.setCreatedById(template.getCreatedBy().getUId());</b>
+<b class="nc">&nbsp;            dto.setCreatedByName(template.getCreatedBy().getName());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (template.getBank() != null) {</b>
+<b class="nc">&nbsp;            dto.setBankId(template.getBank().getBId());</b>
+<b class="nc">&nbsp;            dto.setBankName(template.getBank().getName());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (template.getAuditLog() != null) {</b>
+<b class="nc">&nbsp;            dto.setAuditLogId(template.getAuditLog().getAuditId());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return dto;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static RegexTemplate toEntity(RegexTemplateDto dto) {
+<b class="nc">&nbsp;        if (dto == null) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        RegexTemplate template = new RegexTemplate();</b>
+<b class="nc">&nbsp;        template.setTemplateId(dto.getTemplateId());</b>
+<b class="nc">&nbsp;        template.setSenderHeader(dto.getSenderHeader());</b>
+<b class="nc">&nbsp;        template.setPattern(dto.getPattern());</b>
+<b class="nc">&nbsp;        template.setSampleRawMsg(dto.getSampleRawMsg());</b>
+<b class="nc">&nbsp;        template.setSmsType(dto.getSmsType());</b>
+<b class="nc">&nbsp;        template.setTransactionType(dto.getTransactionType());</b>
+<b class="nc">&nbsp;        template.setStatus(dto.getStatus());</b>
+<b class="nc">&nbsp;        template.setCreatedAt(dto.getCreatedAt());</b>
+<b class="nc">&nbsp;        template.setPaymentType(dto.getPaymentType());</b>
+&nbsp;
+<b class="nc">&nbsp;        if (dto.getCreatedById() != null) {</b>
+<b class="nc">&nbsp;            Users user = new Users();</b>
+<b class="nc">&nbsp;            user.setUId(dto.getCreatedById());</b>
+<b class="nc">&nbsp;            template.setCreatedBy(user);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (dto.getBankId() != null) {</b>
+<b class="nc">&nbsp;            Bank bank = new Bank();</b>
+<b class="nc">&nbsp;            bank.setBId(dto.getBankId());</b>
+<b class="nc">&nbsp;            template.setBank(bank);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Note: auditLog is not set here to avoid circular dependencies
+&nbsp;        // It should be set separately when needed
+&nbsp;
+<b class="nc">&nbsp;        return template;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-01-30 13:57</div>
+</div>
+</body>
+</html>

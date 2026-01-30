@@ -1,0 +1,193 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > BankController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.regexflow.backend.Controller</a>
+</div>
+
+<h1>Coverage Summary for Class: BankController (com.regexflow.backend.Controller)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BankController</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/25)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.regexflow.backend.Controller;
+&nbsp;
+&nbsp;import com.regexflow.backend.Dto.BankDto;
+&nbsp;import com.regexflow.backend.Enums.UserRole;
+&nbsp;import com.regexflow.backend.Service.BankService;
+&nbsp;import jakarta.servlet.http.HttpSession;
+&nbsp;import jakarta.validation.Valid;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.http.HttpStatus;
+&nbsp;import org.springframework.http.ResponseEntity;
+&nbsp;import org.springframework.validation.FieldError;
+&nbsp;import org.springframework.web.bind.MethodArgumentNotValidException;
+&nbsp;import org.springframework.web.bind.annotation.*;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;@RestController
+&nbsp;@RequestMapping(&quot;/bank&quot;)
+&nbsp;public class BankController {
+&nbsp;    private final BankService bankService;
+&nbsp;
+<b class="nc">&nbsp;    public BankController(BankService bankService) {</b>
+<b class="nc">&nbsp;        this.bankService = bankService;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @PostMapping(&quot;/create&quot;)
+&nbsp;    public ResponseEntity&lt;?&gt; createBank(@Valid @RequestBody BankDto bankDto, HttpSession session) {
+<b class="nc">&nbsp;        if (!isAdmin(session)) {</b>
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();</b>
+&nbsp;        }
+&nbsp;        try{
+<b class="nc">&nbsp;            BankDto createdBank = bankService.createBank(bankDto);</b>
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.CREATED).body(createdBank);</b>
+&nbsp;        } catch (Exception ex) {
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @GetMapping
+&nbsp;    public ResponseEntity&lt;List&lt;BankDto&gt;&gt; getAllBanks(HttpSession session) {
+<b class="nc">&nbsp;        if (isCustomer(session)) {</b>
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return ResponseEntity.ok(bankService.getAllBanks());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isAdmin(HttpSession session) {
+<b class="nc">&nbsp;        return session != null</b>
+<b class="nc">&nbsp;            &amp;&amp; session.getAttribute(&quot;token&quot;) != null</b>
+<b class="nc">&nbsp;            &amp;&amp; session.getAttribute(&quot;userId&quot;) != null</b>
+<b class="nc">&nbsp;            &amp;&amp; UserRole.ADMIN.name().equals(String.valueOf(session.getAttribute(&quot;userRole&quot;)));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isCustomer(HttpSession session) {
+<b class="nc">&nbsp;        return session != null</b>
+<b class="nc">&nbsp;            &amp;&amp; session.getAttribute(&quot;token&quot;) != null</b>
+<b class="nc">&nbsp;            &amp;&amp; session.getAttribute(&quot;userId&quot;) != null</b>
+<b class="nc">&nbsp;            &amp;&amp; UserRole.CUSTOMER.name().equals(String.valueOf(session.getAttribute(&quot;userRole&quot;)));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Exception handler for validation errors
+&nbsp;     */
+&nbsp;    @ExceptionHandler(MethodArgumentNotValidException.class)
+&nbsp;    public ResponseEntity&lt;String&gt; handleValidationExceptions(
+&nbsp;            MethodArgumentNotValidException ex) {
+<b class="nc">&nbsp;        StringBuilder errorMessage = new StringBuilder();</b>
+<b class="nc">&nbsp;        ex.getBindingResult().getAllErrors().forEach((error) -&gt; {</b>
+<b class="nc">&nbsp;            String message = error.getDefaultMessage();</b>
+<b class="nc">&nbsp;            if (errorMessage.length() &gt; 0) {</b>
+<b class="nc">&nbsp;                errorMessage.append(&quot;, &quot;);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            errorMessage.append(message);</b>
+&nbsp;        });
+<b class="nc">&nbsp;        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage.toString());</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-01-30 13:57</div>
+</div>
+</body>
+</html>
