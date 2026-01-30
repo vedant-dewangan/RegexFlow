@@ -99,23 +99,44 @@ export function getPaymentMode(extractedFields) {
 }
 
 /**
- * Get month key (YYYY-MM) and display label from createdAt or date string.
+ * Get month key (YYYY-MM) and display label.
+ * Prefer extracted date from SMS (dateStr) so e.g. "28-Dec-2025" shows in Dec 2025.
+ * If no date in SMS, use current month (createdAt or today).
  */
 export function getMonthKey(createdAt, dateStr) {
-  if (createdAt) {
-    const d = new Date(createdAt);
-    return { key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`, date: d };
-  }
+  // 1. Use extracted date from SMS first (transaction date, not submission date)
   if (dateStr) {
     const d = parseDate(dateStr);
     if (d) return { key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`, date: d };
   }
-  return { key: null, date: null };
+  // 2. No date in SMS → default to current month (when user added it)
+  if (createdAt) {
+    const d = new Date(createdAt);
+    return { key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`, date: d };
+  }
+  const now = new Date();
+  return { key: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`, date: now };
 }
 
+/**
+ * Parse date string from SMS (handles "28-Dec-2025", "28/12/2025", ISO, etc.).
+ */
 function parseDate(dateStr) {
-  if (!dateStr) return null;
-  const d = new Date(dateStr);
+  if (!dateStr || typeof dateStr !== 'string') return null;
+  const s = dateStr.trim();
+  if (!s) return null;
+  // DD-Mon-YYYY or D-Mon-YYYY (e.g. 28-Dec-2025, 5-Jan-2026)
+  const dmyMatch = s.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{4})$/);
+  if (dmyMatch) {
+    const [, day, mon, year] = dmyMatch;
+    const months = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
+    const mi = months[mon.charAt(0).toUpperCase() + mon.slice(1).toLowerCase()];
+    if (mi !== undefined) {
+      const d = new Date(parseInt(year, 10), mi, parseInt(day, 10));
+      if (!isNaN(d.getTime()) && d.getDate() === parseInt(day, 10)) return d;
+    }
+  }
+  const d = new Date(s);
   return isNaN(d.getTime()) ? null : d;
 }
 

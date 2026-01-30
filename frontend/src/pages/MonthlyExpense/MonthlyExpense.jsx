@@ -12,6 +12,7 @@ const FILTER_CARDS = [
   { id: 'all', label: 'All Transactions', icon: '📋', filter: () => true },
   { id: 'food', label: 'Food', icon: '🍔', filter: (t) => t._category === 'FOOD' },
   { id: 'entertainment', label: 'Entertainment', icon: '🎬', filter: (t) => t._category === 'ENTERTAINMENT' },
+  { id: 'shopping', label: 'Shopping', icon: '🛒', filter: (t) => t._category === 'SHOPPING' },
   { id: 'upi', label: 'UPI', icon: '📱', filter: (t) => t._paymentMode === 'UPI' },
   { id: 'debit', label: 'All Debit', icon: '↓', filter: (t) => ['DEBIT', 'LOAN', 'SERVICE'].includes(t._type) },
   { id: 'credit', label: 'All Credit', icon: '↑', filter: (t) => t._type === 'CREDIT' },

@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
+import { GoogleGenAI } from '@google/genai';
+import { FaMagic } from 'react-icons/fa';
 import './TemplateEditor.css';
 
 const PAYMENT_TYPES = ['UPI', 'NET_BANKING', 'CREDIT_CARD', 'DEBIT_CARD', 'CASH', 'CHEQUE'];
@@ -66,6 +68,7 @@ function TemplateEditor() {
   const [verificationResult, setVerificationResult] = useState(null);
   const [currentTemplateId, setCurrentTemplateId] = useState(null);
   const [templateStatus, setTemplateStatus] = useState(null);
+  const [aiGenerating, setAiGenerating] = useState(false);
 
   const getBankId = (bank) => bank.bId ?? bank.bid;
 
@@ -157,6 +160,137 @@ function TemplateEditor() {
       [name]: value,
     }));
   };
+
+//   const handleGenerateRegex = async () => {
+//     const sampleMsg = formData.sampleRawMsg?.trim();
+//     if (!sampleMsg) {
+//       toast.error('Please enter a Sample Raw Message first. AI will generate a regex pattern from it.');
+//       return;
+//     }
+//     const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_GEMENI_API_KEY;
+//     if (!apiKey) {
+//       toast.error('AI is not configured. Set VITE_GEMINI_API_KEY in your .env file.');
+//       return;
+//     }
+//     setAiGenerating(true);
+//     try {
+//       const ai = new GoogleGenAI({ apiKey });
+//       // Use 1.5-flash for free tier; 2.0-flash often has 0 free quota. Override with VITE_GEMINI_MODEL if needed.
+//       const model = import.meta.env.VITE_GEMINI_MODEL || 'gemini-3-flash-preview';
+//       const result = await ai.models.generateContent({
+//         model:'gemini-3-flash-preview',
+//         contents: `You are a regex expert for bank SMS parsing. Given the following sample SMS message, generate a single Java-compatible regex pattern with NAMED CAPTURE GROUPS that extracts transaction fields.
+
+// Use ONLY these named group names where applicable (use (?<name>...) syntax):
+// amount, amountNegative, date, balance, balanceNegative, merchant, txnNote, bankAcId, senderName, sBank, sAcType, sAcId, receiverName, rBank, availLimit, creditLimit, paymentType, city, billerAcId, billId, billDate, billPeriod, dueDate, minAmtDue, totAmtDue, principalAmount, frequency, maturityDate, maturityAmount, rateOfInterest, mfNav, mfUnits, mfArn, mfBalUnits, mfSchemeBal, amountPaid, offerAmount, minPurchaseAmt.
+
+// Rules:
+// - Output ONLY the regex pattern. No explanation, no markdown, no code blocks, no backticks.
+// - Escape backslashes for Java (e.g. \\d for digits).
+// - Match amounts like Rs.500.00 or INR 1000 with a named group (amount or amountNegative for debits).
+// - Match dates in common formats (DD-MMM-YY, DD/MM/YYYY, etc.) with group "date".
+// - Match balance or "Avl Bal" / "Available balance" with group "balance" or "balanceNegative".
+// - Keep the pattern concise but accurate for the given sample.
+
+// Sample SMS:
+// """
+// ${sampleMsg}
+// """
+
+// Regex pattern (output only the pattern, nothing else):`,
+//       });
+//       const rawText = result?.text ?? (result?.candidates?.[0]?.content?.parts?.[0]?.text ?? '');
+//       if (!rawText || typeof rawText !== 'string') {
+//         toast.error('AI did not return a valid regex. Please try again.');
+//         return;
+//       }
+//       let pattern = rawText.trim();
+//       pattern = pattern.replace(/^```[\w]*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
+//       setFormData((prev) => ({ ...prev, pattern }));
+//       toast.success('Regex pattern generated. Review and use Verify to test.');
+//     } catch (error) {
+//       console.error('AI regex generation error:', error);
+//       const status = error?.status ?? error?.response?.status ?? error?.code;
+//       const msg = error?.message ?? error?.error?.message ?? '';
+//       const is429 = status === 429 || msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('quota');
+//       if (is429) {
+//         toast.error(
+//           'API quota exceeded. Try again in a minute, or set VITE_GEMINI_MODEL=gemini-1.5-flash in .env (free tier).'
+//         );
+//       } else {
+//         toast.error(msg || 'Failed to generate regex. Please try again.');
+//       }
+//     } finally {
+//       setAiGenerating(false);
+//     }
+//   };
+
+const handleGenerateRegex = async () => {
+  const sampleMsg = formData.sampleRawMsg?.trim();
+  if (!sampleMsg) {
+    toast.error('Please enter a Sample Raw Message first.');
+    return;
+  }
+
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (!apiKey) {
+    toast.error('Set VITE_GEMINI_API_KEY in .env');
+    return;
+  }
+
+  setAiGenerating(true);
+
+  try {
+    const ai = new GoogleGenAI({ apiKey });
+
+    const model = import.meta.env.VITE_GEMINI_MODEL || 'gemini-3-flash-preview';
+    const prompt = `
+You are an expert in bank SMS regex parsing.
+
+Generate ONE regex pattern with named capture groups using (?<name>...)
+
+Allowed group names (use only if present):
+amount, date, balance, merchant, bankAcId, senderName, receiverName, paymentType
+
+Rules:
+- Output ONLY the regex pattern
+- No explanation
+- No markdown
+- No backticks
+- Use standard regex (single backslash)
+- Be accurate to the given SMS
+
+Sample SMS:
+"${sampleMsg}"
+`;
+
+    const result = await ai.models.generateContent({
+      model,
+      contents: prompt
+    });
+
+    let pattern = result?.text || '';
+
+    if (!pattern) {
+      toast.error('No regex generated');
+      return;
+    }
+
+    // Clean accidental markdown (just in case)
+    pattern = pattern.replace(/```/g, '').trim();
+
+    setFormData(prev => ({ ...prev, pattern }));
+
+    toast.success('Regex generated successfully');
+
+  } catch (err) {
+    console.error(err);
+    toast.error('Regex generation failed');
+  } finally {
+    setAiGenerating(false);
+  }
+};
+
 
   const handleVerify = async () => {
     if (!formData.pattern?.trim() || !formData.sampleRawMsg?.trim()) {
@@ -479,10 +613,22 @@ function TemplateEditor() {
             </div>
 
             <div className="form-input-group">
-              <label htmlFor="pattern" className="form-input-label">
-                Regex Pattern
-                <span className="required-asterisk">*</span>
-              </label>
+              <div className="form-label-row">
+                <label htmlFor="pattern" className="form-input-label">
+                  Regex Pattern
+                  <span className="required-asterisk">*</span>
+                </label>
+                <button
+                  type="button"
+                  className="btn-ai"
+                  onClick={handleGenerateRegex}
+                  disabled={loading || verifying || aiGenerating}
+                  title="Generate regex from Sample Raw Message using AI"
+                >
+                  <FaMagic />
+                  {aiGenerating ? ' Generating...' : ' AI Generate'}
+                </button>
+              </div>
               <textarea
                 id="pattern"
                 name="pattern"
@@ -494,7 +640,7 @@ function TemplateEditor() {
                 rows="4"
               />
               <small className="form-hint">
-                Use named groups e.g. (?&lt;amount&gt;\\d+) for extraction
+                Use named groups e.g. (?&lt;amount&gt;\\d+) for extraction. Or paste a sample SMS below and click &quot;AI Generate&quot; to create a pattern.
               </small>
             </div>
 
@@ -524,7 +670,7 @@ function TemplateEditor() {
               type="button"
               className="btn-cancel"
               onClick={handleCancel}
-              disabled={loading || verifying}
+              disabled={loading || verifying || aiGenerating}
             >
               Cancel
             </button>
@@ -532,7 +678,7 @@ function TemplateEditor() {
               type="button"
               className="btn-verify"
               onClick={handleVerify}
-              disabled={loading || verifying}
+              disabled={loading || verifying || aiGenerating}
             >
               {verifying ? 'Verifying...' : 'Verify'}
             </button>
@@ -540,7 +686,7 @@ function TemplateEditor() {
               type="button"
               className="btn-draft"
               onClick={handleSaveDraft}
-              disabled={loading || verifying}
+              disabled={loading || verifying || aiGenerating}
             >
               Save Draft
             </button>
@@ -548,7 +694,7 @@ function TemplateEditor() {
               type="button"
               className="btn-submit"
               onClick={handleSubmitForApproval}
-              disabled={loading || verifying || (templateStatus && templateStatus !== 'DRAFT')}
+              disabled={loading || verifying || aiGenerating || (templateStatus && templateStatus !== 'DRAFT')}
               title={templateStatus && templateStatus !== 'DRAFT' ? `Cannot submit template with status: ${templateStatus}. Only DRAFT templates can be submitted for approval.` : ''}
             >
               Submit for Approval
